@@ -12,8 +12,9 @@ public class MainActivity extends AppCompatActivity {
 
     RelativeLayout layout;
     DisplayMetrics metrics;
-    int width = 0;
-    int height = 0;
+    static public int width = 0;
+    static public int height = 0;
+    static public String USERNAME = "user";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -23,10 +24,10 @@ public class MainActivity extends AppCompatActivity {
 
         metrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(metrics);
-
         height = metrics.heightPixels;
         width = metrics.widthPixels;
-        final InitializeBackground spiralBackground = new InitializeBackground(this, width, height);
+
+        final InitializeBackground spiralBackground = new InitializeBackground(this);
 
         DrawSpiralCanvas draw = new DrawSpiralCanvas(this);
 

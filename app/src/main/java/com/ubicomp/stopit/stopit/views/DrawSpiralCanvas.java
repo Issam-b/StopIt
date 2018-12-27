@@ -6,11 +6,16 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
+import android.os.Bundle;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;
 
+import com.google.firebase.analytics.FirebaseAnalytics;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.ubicomp.stopit.stopit.DrawPathCoordinates;
 import com.ubicomp.stopit.stopit.MainActivity;
 
 import java.util.ArrayList;
@@ -18,14 +23,15 @@ import java.util.List;
 
 public class DrawSpiralCanvas extends View {
 
-    public LayoutParams params;
-    public Path path = new Path();
-    public Paint brush = new Paint();
-    int counter = 0;
+    private Path path = new Path();
+    private Paint brush = new Paint();
+    private int counter = 0;
     boolean drawEnable = true;
     boolean stopClicked = false;
-    public List<List<Float>> listOrigin = new ArrayList<>();
-    public List<List<Float>> listDrawn = new ArrayList<>();
+    private DatabaseReference mDatabase;
+    private List<List<Float>> listOrigin = new ArrayList<>();
+    private List<List<Float>> listDrawn = new ArrayList<>();
+    DrawPathCoordinates drawPathCoordinates = new DrawPathCoordinates();
 
     public DrawSpiralCanvas(Context context) {
         super(context);
@@ -35,7 +41,8 @@ public class DrawSpiralCanvas extends View {
         brush.setStyle(Paint.Style.STROKE);
         brush.setStrokeJoin(Paint.Join.ROUND);
         brush.setStrokeWidth(3f);
-        params = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
+
+        mDatabase = FirebaseDatabase.getInstance().getReference();
     }
 
     @Override
@@ -63,15 +70,19 @@ public class DrawSpiralCanvas extends View {
                 default:
                     return false;
             }
+
             listDrawn.add(listItem);
+            mDatabase.child("users").child(MainActivity.USERNAME).child("DrawnDots").child("" + (counter - 1)).child("x").setValue(pointX);
+            mDatabase.child("users").child(MainActivity.USERNAME).child("DrawnDots").child("" + (counter - 1)).child("y").setValue(pointY);
 
             Log.d("Drawing", "Counter: " + counter);
             postInvalidate();
 
             if(stopClicked) {
                 drawEnable = false;
+                mDatabase.child("users").child("test").child("DotsCount").setValue(counter);
                 double thetaStepSize = InitializeBackground.thetaStepSize * 90 * InitializeBackground.nbrTurns / counter;
-                InitializeBackground.getPath(counter, thetaStepSize, listOrigin, false);
+                drawPathCoordinates.getCoordinates(counter, thetaStepSize, listOrigin);
             }
 
             return true;

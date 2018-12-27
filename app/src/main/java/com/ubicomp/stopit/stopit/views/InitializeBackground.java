@@ -17,6 +17,10 @@ import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.ubicomp.stopit.stopit.DrawPathCoordinates;
+import com.ubicomp.stopit.stopit.MainActivity;
 import com.ubicomp.stopit.stopit.R;
 
 import java.util.ArrayList;
@@ -26,55 +30,23 @@ import static android.provider.Settings.System.getString;
 
 public class InitializeBackground extends View {
 
-    public ViewGroup.LayoutParams params;
-    static private Path path = new Path();
+    private Path path = new Path();
     private Paint brush = new Paint();
-    public VectorDrawable vector;
-    public List<List<Float>> list = new ArrayList<>();
-    static float height;
-    static float width;
     static int nbrTurns = 2;
     static double thetaStepSize = 0.1;
 
-    public InitializeBackground(Context context, int width, int height) {
+    public InitializeBackground(Context context) {
         super(context);
-        this.height = height;
-        this.width = width;
         brush.setAntiAlias(true);
         brush.setColor(Color.GRAY);
         brush.setStyle(Paint.Style.STROKE);
         brush.setStrokeJoin(Paint.Join.ROUND);
         brush.setStrokeWidth(5f);
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            vector = new VectorDrawable();
-        }
-        params = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        getPath(90 * nbrTurns, thetaStepSize, list, true);
+        DrawPathCoordinates drawPathCoordinates = new DrawPathCoordinates();
+        List<List<Float>> list = new ArrayList<>();
+        drawPathCoordinates.getPath(90 * nbrTurns, thetaStepSize, list, path);
         postInvalidate();
-    }
-
-    static public void getPath(int size, double thetaStepSize, List<List<Float>> list, boolean drawPath) {
-        float x = width / 2;
-        float y = height / 2;
-        double theta;
-        List<Float> listItem = new ArrayList<>();
-        Log.d("Numbers", "width:" + width + ", height:" + height);
-        if(drawPath)
-            path.moveTo(x, y);
-
-        for (int i = 0; i < size; i++) {
-            listItem.clear();
-            theta = thetaStepSize * i;
-            x = (float) (2 * (1 + theta) * Math.cos(theta) + x);
-            y = (float) (2 * (1 + theta) * Math.sin(theta) + y);
-            Log.d("Numbers", "X: " + x + " Y:" + y);
-            if(drawPath)
-                path.lineTo(x, y);
-            listItem.add(x);
-            listItem.add(y);
-            list.add(listItem);
-        }
     }
 
    @Override
