@@ -4,17 +4,20 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.DisplayMetrics;
-import android.widget.RelativeLayout;
+import android.view.View;
+import android.widget.Button;
 import com.ubicomp.stopit.stopit.views.DrawSpiralCanvas;
 import com.ubicomp.stopit.stopit.views.InitializeBackground;
 
+
 public class MainActivity extends AppCompatActivity {
 
-    RelativeLayout layout;
     DisplayMetrics metrics;
     static public int width = 0;
     static public int height = 0;
-    static public String USERNAME = "user";
+    static public String USERNAME = "user1";
+    static public DrawSpiralCanvas drawSpiralCanvas;
+    InitializeBackground spiralBackground;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -24,16 +27,31 @@ public class MainActivity extends AppCompatActivity {
 
         metrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(metrics);
-        height = metrics.heightPixels;
+        height = metrics.heightPixels - 400;
         width = metrics.widthPixels;
 
-        final InitializeBackground spiralBackground = new InitializeBackground(this);
+        final Button resetButton = findViewById(R.id.resetButton);
+        final Button doneButton = findViewById(R.id.doneButton);
 
-        DrawSpiralCanvas draw = new DrawSpiralCanvas(this);
+        spiralBackground = new InitializeBackground(this);
+        drawSpiralCanvas = findViewById(R.id.drawSpiralCanvas);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-            draw.setBackground(spiralBackground.getBackground());
-            setContentView(draw);
+            drawSpiralCanvas.setBackground(spiralBackground.getBackground());
         }
+
+        resetButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                drawSpiralCanvas.reset();
+            }
+        });
+
+        doneButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                drawSpiralCanvas.doneDrawing();
+            }
+        });
     }
 }

@@ -10,7 +10,7 @@ import java.util.List;
 
 public class DrawPathCoordinates {
 
-    static public DatabaseReference mDatabase;
+    private DatabaseReference mDatabase;
 
     public DrawPathCoordinates() {
         mDatabase = FirebaseDatabase.getInstance().getReference();
@@ -34,8 +34,8 @@ public class DrawPathCoordinates {
             if(drawPath) {
                 path.lineTo(x, y);
             } else {
-                mDatabase.child("users").child(MainActivity.USERNAME).child("originalDots").child("" + i + 1).child("x").setValue(x);
-                mDatabase.child("users").child(MainActivity.USERNAME).child("originalDots").child("" + i + 1).child("y").setValue(y);
+                mDatabase.child("users").child(MainActivity.USERNAME).child("originalDots").child("" + (i + 1)).child("x").setValue(x);
+                mDatabase.child("users").child(MainActivity.USERNAME).child("originalDots").child("" + (i + 1)).child("y").setValue(y);
             }
             listItem.add(x);
             listItem.add(y);
