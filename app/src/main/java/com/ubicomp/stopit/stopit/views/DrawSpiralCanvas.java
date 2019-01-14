@@ -119,7 +119,6 @@ public class DrawSpiralCanvas extends View {
     public void doneDrawing() {
         drawEnable = false;
         mDatabase.child("users").child(MainActivity.USERNAME).child("DotsCount").setValue(counter - 1);
-        double thetaStepSize = InitializeBackground.thetaStepSize * 90 * InitializeBackground.nbrTurns / counter;
-        drawPathCoordinates.getCoordinates(counter - 1, thetaStepSize, listOrigin);
+        drawPathCoordinates.getGreyCoordinates(counter-1, listOrigin);
     }
 }

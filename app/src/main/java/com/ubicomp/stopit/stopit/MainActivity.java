@@ -27,7 +27,7 @@ public class MainActivity extends AppCompatActivity {
 
         metrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(metrics);
-        height = metrics.heightPixels - 400;
+        height = metrics.heightPixels - 400;    // what is 400?
         width = metrics.widthPixels;
 
         final Button resetButton = findViewById(R.id.resetButton);

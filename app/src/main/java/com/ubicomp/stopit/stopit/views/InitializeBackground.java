@@ -20,8 +20,6 @@ public class InitializeBackground extends View {
 
     private Path path = new Path();
     private Paint brush = new Paint();
-    static int nbrTurns = 2;
-    static double thetaStepSize = 0.1;
 
     public InitializeBackground(Context context) {
         super(context);
@@ -32,8 +30,7 @@ public class InitializeBackground extends View {
         brush.setStrokeWidth(5f);
 
         DrawPathCoordinates drawPathCoordinates = new DrawPathCoordinates();
-        List<List<Float>> list = new ArrayList<>();
-        drawPathCoordinates.getPath(90 * nbrTurns, thetaStepSize, list, path);
+        drawPathCoordinates.drawGreyPath(path);
         postInvalidate();
     }
 

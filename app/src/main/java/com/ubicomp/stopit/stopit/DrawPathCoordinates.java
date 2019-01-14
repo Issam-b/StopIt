@@ -12,42 +12,48 @@ public class DrawPathCoordinates {
 
     private DatabaseReference mDatabase;
 
+    public final static double thetaStepSize = 0.1;
+    public final static double turnsNumber = 4;
+    public final static double turnFull = Math.PI * 2;
+    public final static double turnsDistance = 15; // ?? What's the scaling?
+
     public DrawPathCoordinates() {
         mDatabase = FirebaseDatabase.getInstance().getReference();
     }
 
-    private void getCoordinateWithPath(int size, double thetaStepSize, List<List<Float>> list, Path path, boolean drawPath) {
-        float x = MainActivity.width / 2;
-        float y = MainActivity.height / 2;
-        double theta;
-        List<Float> listItem = new ArrayList<>();
+    // draws grey line
+    public void drawGreyPath(Path path) {
+        float x0 = MainActivity.width / 2;   // Starting point of the spiral
+        float y0 = MainActivity.height / 2;  // is always in the middle of the screen
+        float x;
+        float y;
+        double theta = 0;
 
-        if(drawPath)
-            path.moveTo(x, y);
+        path.moveTo(x0, y0);
 
-        for (int i = 0; i < size; i++) {
-            listItem.clear();
-            theta = thetaStepSize * i;
-            x = (float) (2 * (1 + theta) * Math.cos(theta) + x);
-            y = (float) (2 * (1 + theta) * Math.sin(theta) + y);
-            Log.d("Numbers", "X: " + x + " Y:" + y);
-            if(drawPath) {
-                path.lineTo(x, y);
-            } else {
-                mDatabase.child("users").child(MainActivity.USERNAME).child("originalDots").child("" + (i + 1)).child("x").setValue(x);
-                mDatabase.child("users").child(MainActivity.USERNAME).child("originalDots").child("" + (i + 1)).child("y").setValue(y);
-            }
-            listItem.add(x);
-            listItem.add(y);
-            list.add(listItem);
+        while (theta < turnFull*turnsNumber) {
+            x = (float) (turnsDistance * theta * Math.cos(theta) + x0);
+            y = (float) (turnsDistance * theta * Math.sin(theta) + y0);
+            path.lineTo(x, y);
+            theta += thetaStepSize;
         }
     }
 
-    public void getPath(int size, double thetaStepSize, List<List<Float>> list, Path path) {
-        getCoordinateWithPath(size, thetaStepSize, list, path, true);
-    }
+    // finds the coordinates of specified number of dots over the whole spiral
+    public void getGreyCoordinates(int size, List<List<Float>> list) {
+        float x0 = MainActivity.width / 2;   // Starting point of the spiral
+        float y0 = MainActivity.height / 2;  // is always in the middle of the screen
+        float x;
+        float y;
+        double theta = 0;
+        double thetaStepSize = turnsNumber*turnsDistance/size;
 
-    public void getCoordinates(int size, double thetaStepSize, List<List<Float>> list) {
-        getCoordinateWithPath(size, thetaStepSize, list, null, false);
+        for (int i=1; i<=size; i++) {
+            x = (float) (turnsDistance * theta * Math.cos(theta) + x0);
+            y = (float) (turnsDistance * theta * Math.sin(theta) + y0);
+            mDatabase.child("users").child(MainActivity.USERNAME).child("originalDots").child("" + i).child("x").setValue(x);
+            mDatabase.child("users").child(MainActivity.USERNAME).child("originalDots").child("" + i).child("y").setValue(y);
+            theta += thetaStepSize;
+        }
     }
 }
