@@ -10,6 +10,8 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.Toast;
+
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.ubicomp.stopit.stopit.DrawPathCoordinates;
@@ -119,6 +121,17 @@ public class DrawSpiralCanvas extends View {
     public void doneDrawing() {
         drawEnable = false;
         mDatabase.child("users").child(MainActivity.USERNAME).child("DotsCount").setValue(counter - 1);
-        drawPathCoordinates.getGreyCoordinates(counter-1, listOrigin);
+        listOrigin = drawPathCoordinates.getGreyCoordinates(counter-1);
+
+        // calculating the error rate
+        float error = 0;
+        for (int i=0; i<listOrigin.size(); i++) {
+            error += Math.sqrt( Math.pow(listDrawn.get(i).get(0)-listOrigin.get(i).get(0), 2) +
+                    Math.pow(listDrawn.get(i).get(1)-listOrigin.get(i).get(1), 2));
+        }
+        error = error/listOrigin.size();
+        String msg = "Error in pixels: " + error;
+        Toast.makeText(getContext(), msg, Toast.LENGTH_LONG).show();
+        Log.d("STOP_TAG", msg);
     }
 }
