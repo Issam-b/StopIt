@@ -13,9 +13,9 @@ public class DrawPathCoordinates {
     private DatabaseReference mDatabase;
 
     public final static double thetaStepSize = 0.1;
-    public final static double turnsNumber = 2;
+    public final static double turnsNumber = 1;
     public final static double turnFull = Math.PI * 2;
-    public final static double turnsDistance = 30; // ?? What's the scaling?
+    public final static double turnsDistance = 50; // ?? What's the scaling?
 
     public DrawPathCoordinates() {
         mDatabase = FirebaseDatabase.getInstance().getReference();
@@ -29,12 +29,6 @@ public class DrawPathCoordinates {
         float y;
         double theta = 0;
 
-        /* Angle calculation */
-//        // variables to store angle
-//        List<Double> listBuffer = new ArrayList<>();
-//        List<Double> listAngle = new ArrayList<>();
-//        double buffer = 0;
-
         // starting point of spiral
         path.moveTo(x0, y0);
 
@@ -45,21 +39,6 @@ public class DrawPathCoordinates {
             y = (float) (turnsDistance * theta * Math.sin(theta) + y0);
             path.lineTo(x, y);
             theta += thetaStepSize;
-
-            /* Angle calculation */
-//            double angle = Math.atan((y - y0)/(x - x0));
-//            listBuffer.add(angle);          // stores angle values in (-pi/2 ; pi/2)
-//            listAngle.add(angle);           // stores angle values increasingly
-//            int i = listBuffer.size();
-//
-//            if (i>1) {
-//                if (listBuffer.get(i-1) < listBuffer.get(i-2)) {
-//                    buffer += Math.PI;
-//                }
-//
-//                angle += buffer;            // fixes the value of the angle
-//                listAngle.set(i-1, angle);  // record it to the list
-//            }
         }
     }
 
