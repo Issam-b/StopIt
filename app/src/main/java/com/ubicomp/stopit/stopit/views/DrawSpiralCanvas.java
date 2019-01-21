@@ -1,5 +1,6 @@
 package com.ubicomp.stopit.stopit.views;
 
+import android.app.AlertDialog;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -27,6 +28,8 @@ public class DrawSpiralCanvas extends View {
     private Paint brush = new Paint();
     private int counter = 0;
     boolean drawEnable = true;
+    long start = 0;
+    long finish = 0;
 
     // path coordinate variables
     DrawPathCoordinates drawPathCoordinates = new DrawPathCoordinates();
@@ -35,8 +38,12 @@ public class DrawSpiralCanvas extends View {
     private List<List<Float>> listDrawn = new ArrayList<>();
     private List<Double> listBuffer = new ArrayList<>();
     private List<Double> listAngle = new ArrayList<>();
+    private List<Double> listError = new ArrayList<>();
     double buffer = 0;
     double errorSum = 0;
+    double errorMax = 0;
+    double sd = 0;
+    double sdSum = 0;
 
 
     public DrawSpiralCanvas(Context context) {
@@ -80,6 +87,7 @@ public class DrawSpiralCanvas extends View {
                     listItem.add(pointX);
                     listItem.add(pointY);
                     counter++;
+                    if (start==0) start = System.currentTimeMillis();
                     break;
                 case MotionEvent.ACTION_MOVE:
                     path.lineTo(pointX, pointY);
@@ -89,6 +97,7 @@ public class DrawSpiralCanvas extends View {
                     break;
                 case MotionEvent.ACTION_UP:
                     performClick();
+                    finish = System.currentTimeMillis();
                     return true;
                 default:
                     return false;
@@ -118,9 +127,6 @@ public class DrawSpiralCanvas extends View {
                 }
                 angle += buffer;            // fixes the value of the angle
                 listAngle.set(i-1, angle);  // records it to the list
-                Log.d("STOP_TAG", counter + ": Angle: " + angle);
-            } else {
-                Log.d("STOP_TAG", counter + ": Angle: " + angle);
             }
 
             // 3) Calculate R0 for the corresponding dot in grey line based on received angle
@@ -128,11 +134,10 @@ public class DrawSpiralCanvas extends View {
 
             // 4) Find the error for the dot as an absolute value of R and R0
             double error = Math.abs(r - r0);
+            listError.add(error);
             errorSum += error;
+            if (error>errorMax) errorMax = error;
 
-//            Log.d("STOP_TAG", counter + ": R Orig: "+ r0);
-//            Log.d("STOP_TAG", counter + ": R Drawn: "+ r);
-//            Log.d("STOP_TAG", counter + ": R Error: "+ error);
             return true;
         }
         return false;
@@ -152,23 +157,60 @@ public class DrawSpiralCanvas extends View {
         path.reset();
         counter = 0;
         buffer = 0;
+        start = 0;
+        finish = 0;
         errorSum = 0;
+        sd = 0;
+        sdSum = 0;
+        errorMax = 0;
         listDrawn.clear();
         listOrigin.clear();
         listAngle.clear();
         listBuffer.clear();
+        listError.clear();
         drawEnable = true;
         invalidate();
     }
 
     public void doneDrawing() {
-        drawEnable = false;
-        mDatabase.child("users").child(MainActivity.USERNAME).child("counter").setValue(counter);
-        listOrigin = drawPathCoordinates.getGreyCoordinates(counter);
 
-        double error = errorSum/counter;
-        String msg = "Error in pixels: " + error;
-        Toast.makeText(getContext(), msg, Toast.LENGTH_SHORT).show();
-        Log.d("STOP_TAG", msg);
+        if (counter == 0) {
+            Toast.makeText(getContext(),"Draw the line first", Toast.LENGTH_SHORT).show();
+
+        } else {
+            drawEnable = false;
+            mDatabase.child("users").child(MainActivity.USERNAME).child("counter").setValue(counter);
+            listOrigin = drawPathCoordinates.getGreyCoordinates(counter);
+
+            // error calculation
+            double error = errorSum/counter;
+            double time = (double) (finish - start)/1000;
+
+            // try error calculations with dots, not angle
+            double error2, errorSum2 = 0;
+            for (int i=0; i<counter; i++) {
+                error2 = Math.sqrt(Math.pow(listDrawn.get(i).get(0) - listOrigin.get(i).get(0), 2) +
+                        Math.pow(listDrawn.get(i).get(1) - listOrigin.get(i).get(1), 2));
+                errorSum2 += error2;
+            }
+            error2 = errorSum2/counter;
+
+            // standard deviation calculation
+            for (int i=0; i<counter; i++) {
+                sdSum += Math.pow(listError.get(i) - error, 2);
+            }
+            sd = Math.sqrt(sdSum/counter);
+
+            // dialog to show results
+            AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+            builder.setTitle("Result")
+                    .setMessage("Error in px with dots: " + String.format("%.3f", error2) +
+                            "\nError in px with angle: " + String.format("%.3f", error)  +
+                            "\nSD: " + String.format("%.3f", sd) +
+                            "\nMax error: " + String.format("%.3f", errorMax) +
+                            "\nTime: " + time + " sec")
+                    .setNegativeButton("Dismiss", null)
+                    .show();
+        }
     }
 }

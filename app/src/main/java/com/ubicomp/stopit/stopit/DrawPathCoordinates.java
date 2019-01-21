@@ -13,9 +13,9 @@ public class DrawPathCoordinates {
     private DatabaseReference mDatabase;
 
     public final static double thetaStepSize = 0.1;
-    public final static double turnsNumber = 1;
+    public final static double turnsNumber = 2;
     public final static double turnFull = Math.PI * 2;
-    public final static double turnsDistance = 50; // ?? What's the scaling?
+    public final static double turnsDistance = 30; // ?? What's the scaling?
 
     public DrawPathCoordinates() {
         mDatabase = FirebaseDatabase.getInstance().getReference();
