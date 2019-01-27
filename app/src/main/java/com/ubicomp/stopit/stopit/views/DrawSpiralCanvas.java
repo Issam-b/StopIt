@@ -8,15 +8,14 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Toast;
 
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.ubicomp.stopit.stopit.DrawPathCoordinates;
-import com.ubicomp.stopit.stopit.MainActivity;;
+import com.ubicomp.stopit.stopit.model.DrawPathCoordinates;
+import com.ubicomp.stopit.stopit.presenter.SpiralActivityPresenter;;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -75,8 +74,8 @@ public class DrawSpiralCanvas extends View {
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         if(drawEnable) {
-            float x0 = MainActivity.width / 2;
-            float y0 = MainActivity.height / 2;
+            float x0 = SpiralActivityPresenter.width / 2;
+            float y0 = SpiralActivityPresenter.height / 2;
             float pointX = event.getX();
             float pointY = event.getY();
             List<Float> listItem = new ArrayList<>();
@@ -104,8 +103,8 @@ public class DrawSpiralCanvas extends View {
             }
 
             listDrawn.add(listItem);
-            mDatabase.child("users").child(MainActivity.USERNAME).child("drawnDots").child(String.valueOf(counter)).child("x").setValue(pointX);
-            mDatabase.child("users").child(MainActivity.USERNAME).child("drawnDots").child(String.valueOf(counter)).child("y").setValue(pointY);
+            mDatabase.child("users").child(SpiralActivityPresenter.USERNAME).child("drawnDots").child(String.valueOf(counter)).child("x").setValue(pointX);
+            mDatabase.child("users").child(SpiralActivityPresenter.USERNAME).child("drawnDots").child(String.valueOf(counter)).child("y").setValue(pointY);
             postInvalidate();
 
 
@@ -179,7 +178,7 @@ public class DrawSpiralCanvas extends View {
 
         } else {
             drawEnable = false;
-            mDatabase.child("users").child(MainActivity.USERNAME).child("counter").setValue(counter);
+            mDatabase.child("users").child(SpiralActivityPresenter.USERNAME).child("counter").setValue(counter);
             listOrigin = drawPathCoordinates.getGreyCoordinates(counter);
 
             // error calculation

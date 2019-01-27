@@ -1,9 +1,11 @@
-package com.ubicomp.stopit.stopit;
+package com.ubicomp.stopit.stopit.model;
 
 import android.graphics.Path;
-import android.util.Log;
+
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.ubicomp.stopit.stopit.presenter.SpiralActivityPresenter;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,8 +25,8 @@ public class DrawPathCoordinates {
 
     // draws grey line
     public void drawGreyPath(Path path) {
-        float x0 = MainActivity.width / 2;   // Starting point of the spiral
-        float y0 = MainActivity.height / 2;  // is always in the middle of the screen
+        float x0 = SpiralActivityPresenter.width / 2;   // Starting point of the spiral
+        float y0 = SpiralActivityPresenter.height / 2;  // is always in the middle of the screen
         float x;
         float y;
         double theta = 0;
@@ -44,8 +46,8 @@ public class DrawPathCoordinates {
 
     // finds the coordinates of specified number of dots over the whole spiral
     public List<List<Float>> getGreyCoordinates(int size) {
-        float x0 = MainActivity.width / 2;   // Starting point of the spiral
-        float y0 = MainActivity.height / 2;  // is always in the middle of the screen
+        float x0 = SpiralActivityPresenter.width / 2;   // Starting point of the spiral
+        float y0 = SpiralActivityPresenter.height / 2;  // is always in the middle of the screen
         float x;
         float y;
         double theta = 0;
@@ -55,8 +57,8 @@ public class DrawPathCoordinates {
         for (int i=1; i<=size; i++) {
             x = (float) (turnsDistance * theta * Math.cos(theta) + x0);
             y = (float) (turnsDistance * theta * Math.sin(theta) + y0);
-            mDatabase.child("users").child(MainActivity.USERNAME).child("originalDots").child("" + i).child("x").setValue(x);
-            mDatabase.child("users").child(MainActivity.USERNAME).child("originalDots").child("" + i).child("y").setValue(y);
+            mDatabase.child("users").child(SpiralActivityPresenter.USERNAME).child("originalDots").child("" + i).child("x").setValue(x);
+            mDatabase.child("users").child(SpiralActivityPresenter.USERNAME).child("originalDots").child("" + i).child("y").setValue(y);
 
             List<Float> listItem = new ArrayList<>();
             listItem.add(x);
