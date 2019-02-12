@@ -26,6 +26,7 @@ public class SpiralActivityPresenter extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Intent intent= getIntent();
+        String initializeBackground=intent.getStringExtra("background");
         setContentView(R.layout.spiral_activity);
 
         metrics = new DisplayMetrics();
@@ -36,7 +37,7 @@ public class SpiralActivityPresenter extends AppCompatActivity {
         final Button resetButton = findViewById(R.id.resetButton);
         final Button doneButton = findViewById(R.id.doneButton);
 
-        spiralBackground = new InitializeBackground(this,"triangle");
+        spiralBackground = new InitializeBackground(this,initializeBackground);
         drawSpiralCanvas = findViewById(R.id.drawSpiralCanvas);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {

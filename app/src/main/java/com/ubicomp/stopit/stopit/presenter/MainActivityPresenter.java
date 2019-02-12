@@ -23,6 +23,14 @@ public class MainActivityPresenter extends AppCompatActivity {
 
     public void spiralTest(View view) {
         Intent intent= new Intent(this,SpiralActivityPresenter.class);
+        intent.putExtra("background","spiral");
+        startActivity(intent);
+    }
+
+    public void shapeTest(View view) {
+
+        Intent intent= new Intent(this,SpiralActivityPresenter.class);
+        intent.putExtra("background","square");
         startActivity(intent);
     }
 }

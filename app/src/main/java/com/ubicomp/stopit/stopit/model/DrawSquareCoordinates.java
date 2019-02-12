@@ -9,7 +9,7 @@ import com.ubicomp.stopit.stopit.presenter.SpiralActivityPresenter;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DrawTriangleCoordinates {
+public class DrawSquareCoordinates {
     private DatabaseReference mDatabase;
 
     public final static double thetaStepSize = 0.1;
@@ -17,7 +17,7 @@ public class DrawTriangleCoordinates {
     public final static double turnFull = Math.PI * 2;
     public final static double turnsDistance = 30; // ?? What's the scaling?
 
-    public DrawTriangleCoordinates() {
+    public DrawSquareCoordinates() {
         mDatabase = FirebaseDatabase.getInstance().getReference();
     }
 

@@ -13,7 +13,7 @@ import android.support.annotation.Nullable;
 import android.view.View;
 
 import com.ubicomp.stopit.stopit.model.DrawPathCoordinates;
-import com.ubicomp.stopit.stopit.model.DrawTriangleCoordinates;
+import com.ubicomp.stopit.stopit.model.DrawSquareCoordinates;
 
 
 public class InitializeBackground extends View {
@@ -34,9 +34,9 @@ public class InitializeBackground extends View {
                 drawPathCoordinates.drawGreyPath(path);
                 break;
             }
-            case"triangle":{
-                DrawTriangleCoordinates drawTriangleCoordinates= new DrawTriangleCoordinates();
-                drawTriangleCoordinates.drawGreyPath(path);
+            case"square":{
+                DrawSquareCoordinates drawSquareCoordinates= new DrawSquareCoordinates();
+                drawSquareCoordinates.drawGreyPath(path);
                 break;
             }
             default: break;

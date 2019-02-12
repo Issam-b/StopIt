@@ -82,6 +82,7 @@
                 android:layout_weight="1"
                 android:background="@drawable/common_google_signin_btn_icon_dark_normal_background"
                 android:text="@string/shapes_test"
+                android:onClick="shapeTest"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/username"
