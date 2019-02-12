@@ -36,7 +36,7 @@ public class SpiralActivityPresenter extends AppCompatActivity {
         final Button resetButton = findViewById(R.id.resetButton);
         final Button doneButton = findViewById(R.id.doneButton);
 
-        spiralBackground = new InitializeBackground(this);
+        spiralBackground = new InitializeBackground(this,"triangle");
         drawSpiralCanvas = findViewById(R.id.drawSpiralCanvas);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
