@@ -21,6 +21,10 @@ public class InitializeBackground extends View {
     private Path path = new Path();
     private Paint brush = new Paint();
 
+    public InitializeBackground(Context context) {
+        super(context);
+    }
+
     public InitializeBackground(Context context, String background) {
         super(context);
         brush.setAntiAlias(true);
@@ -34,13 +38,12 @@ public class InitializeBackground extends View {
                 drawPathCoordinates.drawGreyPath(path);
                 break;
             }
-            case"square":{
+            case "square": {
                 DrawSquareCoordinates drawSquareCoordinates= new DrawSquareCoordinates();
                 drawSquareCoordinates.drawGreyPath(path);
                 break;
             }
             default: break;
-
         }
         postInvalidate();
     }

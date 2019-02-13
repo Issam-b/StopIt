@@ -5,9 +5,14 @@
     <string name="username">username</string>
     <string name="spiral">Spiral test</string>
     <string name="shapes">Shapes test</string>
-    <string name="title_activity_main_presenter"></string>
+    <string name="title_activity_main_presenter">
+    </string>
 
     <string name="action_settings">Settings</string>
     <string name="spiral_test">Spiral Test</string>
     <string name="shapes_test">Shapes Test</string>
+    <string name="done">Done</string>
+    <string name="reset">Reset</string>
+    <string name="userIDText">Username: %s \n ID: %d</string>
+    <string name="register_user">Register user</string>
 </resources>

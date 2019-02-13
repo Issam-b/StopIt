@@ -18,6 +18,7 @@ import com.ubicomp.stopit.stopit.model.DrawPathCoordinates;
 import com.ubicomp.stopit.stopit.presenter.SpiralActivityPresenter;;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 
 public class DrawSpiralCanvas extends View {
@@ -74,8 +75,8 @@ public class DrawSpiralCanvas extends View {
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         if(drawEnable) {
-            float x0 = SpiralActivityPresenter.width / 2;
-            float y0 = SpiralActivityPresenter.height / 2;
+            float x0 = SpiralActivityPresenter.width / 2f;
+            float y0 = SpiralActivityPresenter.height / 2f;
             float pointX = event.getX();
             float pointY = event.getY();
             List<Float> listItem = new ArrayList<>();
@@ -203,10 +204,10 @@ public class DrawSpiralCanvas extends View {
             // dialog to show results
             AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
             builder.setTitle("Result")
-                    .setMessage("Error in px with dots: " + String.format("%.3f", error2) +
-                            "\nError in px with angle: " + String.format("%.3f", error)  +
-                            "\nSD: " + String.format("%.3f", sd) +
-                            "\nMax error: " + String.format("%.3f", errorMax) +
+                    .setMessage("Error in px with dots: " + String.format(Locale.ENGLISH, "%.3f", error2) +
+                            "\nError in px with angle: " + String.format(Locale.ENGLISH,"%.3f", error)  +
+                            "\nSD: " + String.format(Locale.ENGLISH,"%.3f", sd) +
+                            "\nMax error: " + String.format(Locale.ENGLISH,"%.3f", errorMax) +
                             "\nTime: " + time + " sec")
                     .setNegativeButton("Dismiss", null)
                     .show();

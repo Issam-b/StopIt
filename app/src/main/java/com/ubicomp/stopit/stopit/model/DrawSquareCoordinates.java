@@ -13,37 +13,34 @@ public class DrawSquareCoordinates {
     private DatabaseReference mDatabase;
 
     public final static double thetaStepSize = 0.1;
-    public final static double turnsNumber = 2;
-    public final static double turnFull = Math.PI * 2;
-    public final static double turnsDistance = 30; // ?? What's the scaling?
+    private final static double turnsNumber = 2;
+    private final static double turnFull = Math.PI * 2;
+    private final static double turnsDistance = 30; // ?? What's the scaling?
 
     public DrawSquareCoordinates() {
         mDatabase = FirebaseDatabase.getInstance().getReference();
     }
 
     // draws grey line
-    public void drawGreyPath(Path triangle) {
-        float x0 = SpiralActivityPresenter.width/2- SpiralActivityPresenter.width/6;   // Starting point of the spiral
-        float y0 = SpiralActivityPresenter.height/2-SpiralActivityPresenter.height/6 ;  // is always in the middle of the screen
+    public void drawGreyPath(Path square) {
+        float x0 = SpiralActivityPresenter.width / 2f- SpiralActivityPresenter.width / 6f;   // Starting point of the spiral
+        float y0 = SpiralActivityPresenter.height / 2f -SpiralActivityPresenter.height / 6f ;  // is always in the middle of the screen
         float x1=x0*2;
         float y1=y0*2;
-        triangle.moveTo(x0,y0);
-        triangle.lineTo(x1,y0);
-        triangle.moveTo(x1,y0);
-        triangle.lineTo(x1,y1);
-        triangle.moveTo(x1,y1);
-        triangle.lineTo(x0,y1);
-        triangle.moveTo(x0,y1);
-        triangle.lineTo(x0,y0);
-
-
-
-        }
+        square.moveTo(x0,y0);
+        square.lineTo(x1,y0);
+        square.moveTo(x1,y0);
+        square.lineTo(x1,y1);
+        square.moveTo(x1,y1);
+        square.lineTo(x0,y1);
+        square.moveTo(x0,y1);
+        square.lineTo(x0,y0);
+    }
 
     // finds the coordinates of specified number of dots over the whole spiral
     public List<List<Float>> getGreyCoordinates(int size) {
-        float x0 = SpiralActivityPresenter.width / 2;   // Starting point of the spiral
-        float y0 = SpiralActivityPresenter.height / 2;  // is always in the middle of the screen
+        float x0 = SpiralActivityPresenter.width / 2.0f;   // Starting point of the spiral
+        float y0 = SpiralActivityPresenter.height / 2.0f;  // is always in the middle of the screen
         float x;
         float y;
         double theta = 0;

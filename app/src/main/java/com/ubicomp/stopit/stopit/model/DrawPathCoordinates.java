@@ -14,9 +14,9 @@ public class DrawPathCoordinates {
 
     private DatabaseReference mDatabase;
 
-    public final static double thetaStepSize = 0.1;
-    public final static double turnsNumber = 2;
-    public final static double turnFull = Math.PI * 2;
+    private final static double thetaStepSize = 0.1;
+    private final static double turnsNumber = 2;
+    private final static double turnFull = Math.PI * 2;
     public final static double turnsDistance = 30; // ?? What's the scaling?
 
     public DrawPathCoordinates() {
@@ -25,8 +25,8 @@ public class DrawPathCoordinates {
 
     // draws grey line
     public void drawGreyPath(Path path) {
-        float x0 = SpiralActivityPresenter.width / 2;   // Starting point of the spiral
-        float y0 = SpiralActivityPresenter.height / 2;  // is always in the middle of the screen
+        float x0 = SpiralActivityPresenter.width / 2f;   // Starting point of the spiral
+        float y0 = SpiralActivityPresenter.height / 2f;  // is always in the middle of the screen
         float x;
         float y;
         double theta = 0;
@@ -46,8 +46,8 @@ public class DrawPathCoordinates {
 
     // finds the coordinates of specified number of dots over the whole spiral
     public List<List<Float>> getGreyCoordinates(int size) {
-        float x0 = SpiralActivityPresenter.width / 2;   // Starting point of the spiral
-        float y0 = SpiralActivityPresenter.height / 2;  // is always in the middle of the screen
+        float x0 = SpiralActivityPresenter.width / 2f;   // Starting point of the spiral
+        float y0 = SpiralActivityPresenter.height / 2f;  // is always in the middle of the screen
         float x;
         float y;
         double theta = 0;
