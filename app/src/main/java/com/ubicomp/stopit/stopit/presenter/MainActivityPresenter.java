@@ -41,10 +41,6 @@ public class MainActivityPresenter extends AppCompatActivity {
         }
 
         et_username = findViewById(R.id.usernameText);
-
-
-        //mDatabase = FirebaseDatabase.getInstance().getReference();
-
     }
 
     public void spiralTest(View view) {

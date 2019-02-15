@@ -23,10 +23,10 @@ public class DrawSquareCoordinates {
 
     // draws grey line
     public void drawGreyPath(Path square) {
-        float x0 = SpiralActivityPresenter.width / 2f- SpiralActivityPresenter.width / 6f;   // Starting point of the spiral
-        float y0 = SpiralActivityPresenter.height / 2f -SpiralActivityPresenter.height / 6f ;  // is always in the middle of the screen
-        float x1=x0*2;
-        float y1=y0*2;
+        float x0 = SpiralActivityPresenter.width / 5f;   // Puts the square in the middle of the screen
+        float y0 = SpiralActivityPresenter.height / 3f;
+        float x1=x0*4;
+        float y1=y0 + x0*3;
         square.moveTo(x0,y0);
         square.lineTo(x1,y0);
         square.moveTo(x1,y0);
