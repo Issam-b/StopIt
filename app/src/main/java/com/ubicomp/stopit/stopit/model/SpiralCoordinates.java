@@ -4,14 +4,14 @@ import android.graphics.Path;
 
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.ubicomp.stopit.stopit.presenter.SpiralActivityPresenter;
+import com.ubicomp.stopit.stopit.presenter.CanvasActivityPresenter;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
 
-public class DrawPathCoordinates {
+public class SpiralCoordinates {
 
     private DatabaseReference mDatabase;
 
@@ -20,14 +20,14 @@ public class DrawPathCoordinates {
     private final static double turnFull = Math.PI * 2;
     public final static double turnsDistance = 30; // ?? What's the scaling?
 
-    public DrawPathCoordinates() {
+    public SpiralCoordinates() {
         mDatabase = FirebaseDatabase.getInstance().getReference();
     }
 
     // draws grey line
     public void drawGreyPath(Path path) {
-        float x0 = SpiralActivityPresenter.width / 2f;   // Starting point of the spiral
-        float y0 = SpiralActivityPresenter.height / 2f;  // is always in the middle of the screen
+        float x0 = CanvasActivityPresenter.width / 2f;   // Starting point of the spiral
+        float y0 = CanvasActivityPresenter.height / 2f;  // is always in the middle of the screen
         float x;
         float y;
         double theta = 0;
@@ -47,8 +47,8 @@ public class DrawPathCoordinates {
 
     // finds the coordinates of specified number of dots over the whole spiral
     public List<List<Float>> getGreyCoordinates(int size, String shape, long start) {
-        float x0 = SpiralActivityPresenter.width / 2f;   // Starting point of the spiral
-        float y0 = SpiralActivityPresenter.height / 2f;  // is always in the middle of the screen
+        float x0 = CanvasActivityPresenter.width / 2f;   // Starting point of the spiral
+        float y0 = CanvasActivityPresenter.height / 2f;  // is always in the middle of the screen
         float x;
         float y;
         double theta = 0;
@@ -59,7 +59,7 @@ public class DrawPathCoordinates {
             x = (float) (turnsDistance * theta * Math.cos(theta) + x0);
             y = (float) (turnsDistance * theta * Math.sin(theta) + y0);
             mDatabase.child("users")
-                    .child(SpiralActivityPresenter.username)
+                    .child(CanvasActivityPresenter.username)
                     .child(shape)
                     .child(String.valueOf(start))
                     .child("originalDots")
@@ -67,7 +67,7 @@ public class DrawPathCoordinates {
                     .child("x")
                     .setValue(x);
             mDatabase.child("users")
-                    .child(SpiralActivityPresenter.username)
+                    .child(CanvasActivityPresenter.username)
                     .child(shape)
                     .child(String.valueOf(start))
                     .child("originalDots")
@@ -87,8 +87,8 @@ public class DrawPathCoordinates {
     }
 
     public List<Double> getSpiralResults(List<List<Float>> drawn, int counter, long start, long finish) {
-        float x0 = SpiralActivityPresenter.width / 2f;
-        float y0 = SpiralActivityPresenter.height / 2f;
+        float x0 = CanvasActivityPresenter.width / 2f;
+        float y0 = CanvasActivityPresenter.height / 2f;
         List<Double> listAngle = new ArrayList<>();
         List<Double> listError = new ArrayList<>();
         double buffer = 0;
@@ -120,7 +120,7 @@ public class DrawPathCoordinates {
             }
 
             // 3) Calculate R0 for the corresponding dot in grey line based on received angle
-            double r0 = DrawPathCoordinates.turnsDistance*angle;
+            double r0 = SpiralCoordinates.turnsDistance*angle;
 
             // 4) Find the error for the dot as an absolute value of R and R0
             double error = Math.abs(r - r0);
@@ -133,7 +133,7 @@ public class DrawPathCoordinates {
 
         // counter record to db
         mDatabase.child("users")
-                .child(SpiralActivityPresenter.username)
+                .child(CanvasActivityPresenter.username)
                 .child("spiral")
                 .child(String.valueOf(start))
                 .child("counter")
@@ -142,7 +142,7 @@ public class DrawPathCoordinates {
         // average error calculation and record to db
         double error = errorSum/counter;
         mDatabase.child("users")
-                .child(SpiralActivityPresenter.username)
+                .child(CanvasActivityPresenter.username)
                 .child("spiral")
                 .child(String.valueOf(start))
                 .child("results")
@@ -151,7 +151,7 @@ public class DrawPathCoordinates {
 
         // max error record to db
         mDatabase.child("users")
-                .child(SpiralActivityPresenter.username)
+                .child(CanvasActivityPresenter.username)
                 .child("spiral")
                 .child(String.valueOf(start))
                 .child("results")
@@ -164,7 +164,7 @@ public class DrawPathCoordinates {
         }
         double sd = Math.sqrt(sdSum/counter);
         mDatabase.child("users")
-                .child(SpiralActivityPresenter.username)
+                .child(CanvasActivityPresenter.username)
                 .child("spiral")
                 .child(String.valueOf(start))
                 .child("results")
@@ -174,7 +174,7 @@ public class DrawPathCoordinates {
         // time calculation and record to db
         double time = (double) (finish - start)/1000;
         mDatabase.child("users")
-                .child(SpiralActivityPresenter.username)
+                .child(CanvasActivityPresenter.username)
                 .child("spiral")
                 .child(String.valueOf(start))
                 .child("results")

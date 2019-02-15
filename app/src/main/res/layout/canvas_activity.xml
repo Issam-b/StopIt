@@ -5,7 +5,7 @@
     android:id="@+id/Layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".presenter.SpiralActivityPresenter">
+    tools:context=".presenter.CanvasActivityPresenter">
 
     <android.support.constraint.ConstraintLayout
         android:id="@+id/linearLayout"
@@ -19,8 +19,8 @@
         android:layout_marginTop="0dp"
         android:orientation="vertical">
 
-        <com.ubicomp.stopit.stopit.views.DrawSpiralCanvas
-            android:id="@+id/drawSpiralCanvas"
+        <com.ubicomp.stopit.stopit.views.DrawCanvas
+            android:id="@+id/drawCanvas"
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:layout_marginStart="8dp"

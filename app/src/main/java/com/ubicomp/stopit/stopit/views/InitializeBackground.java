@@ -18,8 +18,8 @@ import android.view.View;
 import android.widget.ImageView;
 
 import com.ubicomp.stopit.stopit.R;
-import com.ubicomp.stopit.stopit.model.DrawPathCoordinates;
-import com.ubicomp.stopit.stopit.model.DrawSquareCoordinates;
+import com.ubicomp.stopit.stopit.model.SpiralCoordinates;
+import com.ubicomp.stopit.stopit.model.SquareCoordinates;
 
 
 public class InitializeBackground extends View {
@@ -45,14 +45,14 @@ public class InitializeBackground extends View {
 
         switch (background) {
             case "spiral": {
-                DrawPathCoordinates drawPathCoordinates = new DrawPathCoordinates();
-                drawPathCoordinates.drawGreyPath(path);
+                SpiralCoordinates spiralCoordinates = new SpiralCoordinates();
+                spiralCoordinates.drawGreyPath(path);
                 help.setImageResource(R.drawable.ic_hint_spiral);
                 break;
             }
             case "square": {
-                DrawSquareCoordinates drawSquareCoordinates= new DrawSquareCoordinates();
-                drawSquareCoordinates.drawGreyPath(path);
+                SquareCoordinates squareCoordinates = new SquareCoordinates();
+                squareCoordinates.drawGreyPath(path);
                 help.setImageResource(R.drawable.ic_hint_square);
                 break;
             }

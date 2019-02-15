@@ -15,14 +15,15 @@ import android.widget.Toast;
 
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.ubicomp.stopit.stopit.model.DrawPathCoordinates;
-import com.ubicomp.stopit.stopit.presenter.SpiralActivityPresenter;;
+import com.ubicomp.stopit.stopit.model.SpiralCoordinates;
+import com.ubicomp.stopit.stopit.presenter.CanvasActivityPresenter;
+;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
 
-public class DrawSpiralCanvas extends View {
+public class DrawCanvas extends View {
 
     // drawing variables
     private Path path = new Path();
@@ -33,7 +34,7 @@ public class DrawSpiralCanvas extends View {
     long finish = 0;
 
     // path coordinate variables
-    DrawPathCoordinates drawPathCoordinates = new DrawPathCoordinates();
+    SpiralCoordinates spiralCoordinates = new SpiralCoordinates();
     private DatabaseReference mDatabase;
     private List<List<Float>> listOrigin = new ArrayList<>();
     private List<List<Float>> listDrawn = new ArrayList<>();
@@ -41,12 +42,12 @@ public class DrawSpiralCanvas extends View {
     String shape;
 
 
-    public DrawSpiralCanvas(Context context) {
+    public DrawCanvas(Context context) {
         super(context);
         init(null);
     }
 
-    public DrawSpiralCanvas(Context context, @Nullable AttributeSet attrs) {
+    public DrawCanvas(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
         init(attrs);
 
@@ -59,7 +60,7 @@ public class DrawSpiralCanvas extends View {
         mDatabase = FirebaseDatabase.getInstance().getReference();
     }
 
-    public DrawSpiralCanvas(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
+    public DrawCanvas(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         init(attrs);
     }
@@ -98,7 +99,7 @@ public class DrawSpiralCanvas extends View {
 
             listDrawn.add(listItem);
             mDatabase.child("users")
-                    .child(SpiralActivityPresenter.username)
+                    .child(CanvasActivityPresenter.username)
                     .child(shape)
                     .child(String.valueOf(start))
                     .child("drawnDots")
@@ -106,7 +107,7 @@ public class DrawSpiralCanvas extends View {
                     .child("x")
                     .setValue(pointX);
             mDatabase.child("users")
-                    .child(SpiralActivityPresenter.username)
+                    .child(CanvasActivityPresenter.username)
                     .child(shape)
                     .child(String.valueOf(start))
                     .child("drawnDots")
@@ -150,10 +151,10 @@ public class DrawSpiralCanvas extends View {
             drawEnable = false;
 
             // getting list of corresponding dots in the original spiral
-            listOrigin = drawPathCoordinates.getGreyCoordinates(counter, shape, start);
+            listOrigin = spiralCoordinates.getGreyCoordinates(counter, shape, start);
 
             // getting result based on list of drawn dots coordinates
-            List<Double> result = drawPathCoordinates.getSpiralResults(listDrawn, counter, start, finish);
+            List<Double> result = spiralCoordinates.getSpiralResults(listDrawn, counter, start, finish);
             double error = result.get(0);
             double sd = result.get(1);
             double maxError = result.get(2);
@@ -169,7 +170,7 @@ public class DrawSpiralCanvas extends View {
                     .setNegativeButton("Dismiss", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialogInterface, int i) {
-                            SpiralActivityPresenter activity = (SpiralActivityPresenter) getContext();
+                            CanvasActivityPresenter activity = (CanvasActivityPresenter) getContext();
                             activity.finish();
                         }
                     })
