@@ -37,30 +37,31 @@ public class DrawSquareCoordinates {
         square.lineTo(x0,y0);
     }
 
+    //TODO
     // finds the coordinates of specified number of dots over the whole spiral
-    public List<List<Float>> getGreyCoordinates(int size) {
-        float x0 = SpiralActivityPresenter.width / 2.0f;   // Starting point of the spiral
-        float y0 = SpiralActivityPresenter.height / 2.0f;  // is always in the middle of the screen
-        float x;
-        float y;
-        double theta = 0;
-        double thetaStepSize = turnsNumber*turnFull/size;
-        List<List<Float>> originalDots = new ArrayList<>();
-
-        for (int i=1; i<=size; i++) {
-            x = (float) (turnsDistance * theta * Math.cos(theta) + x0);
-            y = (float) (turnsDistance * theta * Math.sin(theta) + y0);
-            mDatabase.child("users").child(SpiralActivityPresenter.USERNAME).child("originalDots").child("" + i).child("x").setValue(x);
-            mDatabase.child("users").child(SpiralActivityPresenter.USERNAME).child("originalDots").child("" + i).child("y").setValue(y);
-
-            List<Float> listItem = new ArrayList<>();
-            listItem.add(x);
-            listItem.add(y);
-            originalDots.add(listItem);
-
-            theta += thetaStepSize;
-        }
-
-        return originalDots;
-    }
+//    public List<List<Float>> getGreyCoordinates(int size) {
+//        float x0 = SpiralActivityPresenter.width / 2.0f;   // Starting point of the spiral
+//        float y0 = SpiralActivityPresenter.height / 2.0f;  // is always in the middle of the screen
+//        float x;
+//        float y;
+//        double theta = 0;
+//        double thetaStepSize = turnsNumber*turnFull/size;
+//        List<List<Float>> originalDots = new ArrayList<>();
+//
+//        for (int i=1; i<=size; i++) {
+//            x = (float) (turnsDistance * theta * Math.cos(theta) + x0);
+//            y = (float) (turnsDistance * theta * Math.sin(theta) + y0);
+//            mDatabase.child("users").child(SpiralActivityPresenter.USERNAME).child("originalDots").child("" + i).child("x").setValue(x);
+//            mDatabase.child("users").child(SpiralActivityPresenter.USERNAME).child("originalDots").child("" + i).child("y").setValue(y);
+//
+//            List<Float> listItem = new ArrayList<>();
+//            listItem.add(x);
+//            listItem.add(y);
+//            originalDots.add(listItem);
+//
+//            theta += thetaStepSize;
+//        }
+//
+//        return originalDots;
+//    }
 }

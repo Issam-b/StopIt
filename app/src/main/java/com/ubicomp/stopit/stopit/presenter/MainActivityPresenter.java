@@ -25,6 +25,8 @@ public class MainActivityPresenter extends AppCompatActivity {
     private DatabaseReference mDatabase;
     static public int USERS_COUNT;
     static public String USERNAME;
+    private String username = "empty_name";
+    private EditText et_username;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,61 +40,30 @@ public class MainActivityPresenter extends AppCompatActivity {
             Log.d("StopIt", "Couldn't hide bar title");
         }
 
-        final Button registerButton = findViewById(R.id.registerButton);
-        final TextView idText = findViewById(R.id.idText);
+        et_username = findViewById(R.id.usernameText);
 
-        mDatabase = FirebaseDatabase.getInstance().getReference();
-        mDatabase.child("USERS_COUNT").addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                try {
-                    USERS_COUNT = dataSnapshot.getValue(Integer.class);
-                    Log.d("StopIt", "" + USERS_COUNT);
-                } catch (DatabaseException exception) {
-                    Log.d("StopIt", "No existing USERS_COUNT, setting it to 0");
-                    USERS_COUNT = 0;
-                }
-                if (USERS_COUNT == 0)
-                    mDatabase.child("USERS_COUNT").setValue(1);
 
-                registerButton.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        EditText usernameText = findViewById(R.id.usernameText);
-                        USERNAME = usernameText.getText().toString();
-                        USERNAME += "_id_" + ++USERS_COUNT;
-                        if (!USERNAME.matches("")) {
-                            mDatabase.child(USERNAME + "_id_" + USERS_COUNT).child("user_id").setValue(USERS_COUNT);
-                            mDatabase.child("USERS_COUNT").setValue(USERS_COUNT);
-                            idText.setText(getString(R.string.userIDText, USERNAME, USERS_COUNT));
-                            registerButton.setVisibility(View.GONE);
-                            usernameText.setVisibility(View.GONE);
-                            Toast.makeText(MainActivityPresenter.this, "Registered OK",
-                                    Toast.LENGTH_SHORT).show();
-                        } else {
-                            Toast.makeText(MainActivityPresenter.this, "You did not enter a username",
-                                    Toast.LENGTH_SHORT).show();
-                        }
-                    }
-                });
-            }
+        //mDatabase = FirebaseDatabase.getInstance().getReference();
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
     }
 
     public void spiralTest(View view) {
+        if (!et_username.getText().toString().equals(""))
+            username = et_username.getText().toString();
+
         Intent intent= new Intent(this,SpiralActivityPresenter.class);
         intent.putExtra("background","spiral");
+        intent.putExtra("username", username);
         startActivity(intent);
     }
 
     public void shapeTest(View view) {
+        if (!et_username.getText().toString().equals(""))
+            username = et_username.getText().toString();
+
         Intent intent= new Intent(this,SpiralActivityPresenter.class);
         intent.putExtra("background","square");
+        intent.putExtra("username", username);
         startActivity(intent);
     }
 }

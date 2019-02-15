@@ -18,15 +18,16 @@ public class SpiralActivityPresenter extends AppCompatActivity {
     DisplayMetrics metrics;
     static public int width = 0;
     static public int height = 0;
-    static public String USERNAME = "user1";
+    public static String username;
     static public DrawSpiralCanvas drawSpiralCanvas;
     InitializeBackground spiralBackground;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Intent intent= getIntent();
-        String initializeBackground=intent.getStringExtra("background");
+        Intent intent = getIntent();
+        String initializeBackground = intent.getStringExtra("background");
+        username = intent.getStringExtra("username");
         setContentView(R.layout.spiral_activity);
 
         metrics = new DisplayMetrics();
@@ -39,6 +40,7 @@ public class SpiralActivityPresenter extends AppCompatActivity {
 
         spiralBackground = new InitializeBackground(this,initializeBackground);
         drawSpiralCanvas = findViewById(R.id.drawSpiralCanvas);
+        drawSpiralCanvas.setShape(initializeBackground);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
             drawSpiralCanvas.setBackground(spiralBackground.getBackground());

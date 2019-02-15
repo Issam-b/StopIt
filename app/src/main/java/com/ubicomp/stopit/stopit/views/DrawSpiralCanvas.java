@@ -2,6 +2,7 @@ package com.ubicomp.stopit.stopit.views;
 
 import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -44,6 +45,8 @@ public class DrawSpiralCanvas extends View {
     double errorMax = 0;
     double sd = 0;
     double sdSum = 0;
+
+    String shape;
 
 
     public DrawSpiralCanvas(Context context) {
@@ -104,8 +107,22 @@ public class DrawSpiralCanvas extends View {
             }
 
             listDrawn.add(listItem);
-            mDatabase.child("users").child(SpiralActivityPresenter.USERNAME).child("drawnDots").child(String.valueOf(counter)).child("x").setValue(pointX);
-            mDatabase.child("users").child(SpiralActivityPresenter.USERNAME).child("drawnDots").child(String.valueOf(counter)).child("y").setValue(pointY);
+            mDatabase.child("users")
+                    .child(SpiralActivityPresenter.username)
+                    .child(shape)
+                    .child(String.valueOf(start))
+                    .child("drawnDots")
+                    .child(String.valueOf(counter))
+                    .child("x")
+                    .setValue(pointX);
+            mDatabase.child("users")
+                    .child(SpiralActivityPresenter.username)
+                    .child(shape)
+                    .child(String.valueOf(start))
+                    .child("drawnDots")
+                    .child(String.valueOf(counter))
+                    .child("y")
+                    .setValue(pointY);
             postInvalidate();
 
 
@@ -179,21 +196,17 @@ public class DrawSpiralCanvas extends View {
 
         } else {
             drawEnable = false;
-            mDatabase.child("users").child(SpiralActivityPresenter.USERNAME).child("counter").setValue(counter);
-            listOrigin = drawPathCoordinates.getGreyCoordinates(counter);
+            mDatabase.child("users")
+                    .child(SpiralActivityPresenter.username)
+                    .child(shape)
+                    .child(String.valueOf(start))
+                    .child("counter")
+                    .setValue(counter);
+            listOrigin = drawPathCoordinates.getGreyCoordinates(counter, shape, start);
 
             // error calculation
             double error = errorSum/counter;
             double time = (double) (finish - start)/1000;
-
-            // try error calculations with dots, not angle
-            double error2, errorSum2 = 0;
-            for (int i=0; i<counter; i++) {
-                error2 = Math.sqrt(Math.pow(listDrawn.get(i).get(0) - listOrigin.get(i).get(0), 2) +
-                        Math.pow(listDrawn.get(i).get(1) - listOrigin.get(i).get(1), 2));
-                errorSum2 += error2;
-            }
-            error2 = errorSum2/counter;
 
             // standard deviation calculation
             for (int i=0; i<counter; i++) {
@@ -204,13 +217,22 @@ public class DrawSpiralCanvas extends View {
             // dialog to show results
             AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
             builder.setTitle("Result")
-                    .setMessage("Error in px with dots: " + String.format(Locale.ENGLISH, "%.3f", error2) +
-                            "\nError in px with angle: " + String.format(Locale.ENGLISH,"%.3f", error)  +
-                            "\nSD: " + String.format(Locale.ENGLISH,"%.3f", sd) +
-                            "\nMax error: " + String.format(Locale.ENGLISH,"%.3f", errorMax) +
+                    .setMessage("Error: " + String.format(Locale.ENGLISH,"%.3f", error) + " px" +
+                            "\nSD: " + String.format(Locale.ENGLISH,"%.3f", sd) + " px" +
+                            "\nMax error: " + String.format(Locale.ENGLISH,"%.3f", errorMax) + " px" +
                             "\nTime: " + time + " sec")
-                    .setNegativeButton("Dismiss", null)
+                    .setNegativeButton("Dismiss", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            SpiralActivityPresenter activity = (SpiralActivityPresenter) getContext();
+                            activity.finish();
+                        }
+                    })
                     .show();
         }
+    }
+
+    public void setShape(String shape) {
+        this.shape = shape;
     }
 }
