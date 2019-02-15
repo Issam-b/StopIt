@@ -37,14 +37,6 @@ public class DrawSpiralCanvas extends View {
     private DatabaseReference mDatabase;
     private List<List<Float>> listOrigin = new ArrayList<>();
     private List<List<Float>> listDrawn = new ArrayList<>();
-    private List<Double> listBuffer = new ArrayList<>();
-    private List<Double> listAngle = new ArrayList<>();
-    private List<Double> listError = new ArrayList<>();
-    double buffer = 0;
-    double errorSum = 0;
-    double errorMax = 0;
-    double sd = 0;
-    double sdSum = 0;
 
     String shape;
 
@@ -78,8 +70,6 @@ public class DrawSpiralCanvas extends View {
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         if(drawEnable) {
-            float x0 = SpiralActivityPresenter.width / 2f;
-            float y0 = SpiralActivityPresenter.height / 2f;
             float pointX = event.getX();
             float pointY = event.getY();
             List<Float> listItem = new ArrayList<>();
@@ -125,36 +115,6 @@ public class DrawSpiralCanvas extends View {
                     .setValue(pointY);
             postInvalidate();
 
-
-            // Calculating the error:
-            // 1) Calculate R for the drawn dot
-            double r = Math.sqrt(Math.pow(pointX-x0, 2) + Math.pow(pointY-y0, 2));
-
-            /* 2) Calculate Θ for the drawn dot
-               2.1) Every next Θ should be bigger than previous, hence every value is checked
-                    and increased if needed
-            */
-            double angle = Math.atan((pointY - y0)/(pointX - x0));
-            listBuffer.add(angle);          // stores angle values in (-pi/2 ; pi/2)
-            listAngle.add(angle);           // stores angle values increasingly
-            int i = listBuffer.size();
-            if (i>1) {
-                if (listBuffer.get(i-1) < listBuffer.get(i-2)) {
-                    buffer += Math.PI;
-                }
-                angle += buffer;            // fixes the value of the angle
-                listAngle.set(i-1, angle);  // records it to the list
-            }
-
-            // 3) Calculate R0 for the corresponding dot in grey line based on received angle
-            double r0 = DrawPathCoordinates.turnsDistance*angle;
-
-            // 4) Find the error for the dot as an absolute value of R and R0
-            double error = Math.abs(r - r0);
-            listError.add(error);
-            errorSum += error;
-            if (error>errorMax) errorMax = error;
-
             return true;
         }
         return false;
@@ -173,18 +133,10 @@ public class DrawSpiralCanvas extends View {
     public void reset() {
         path.reset();
         counter = 0;
-        buffer = 0;
         start = 0;
         finish = 0;
-        errorSum = 0;
-        sd = 0;
-        sdSum = 0;
-        errorMax = 0;
         listDrawn.clear();
         listOrigin.clear();
-        listAngle.clear();
-        listBuffer.clear();
-        listError.clear();
         drawEnable = true;
         invalidate();
     }
@@ -196,30 +148,23 @@ public class DrawSpiralCanvas extends View {
 
         } else {
             drawEnable = false;
-            mDatabase.child("users")
-                    .child(SpiralActivityPresenter.username)
-                    .child(shape)
-                    .child(String.valueOf(start))
-                    .child("counter")
-                    .setValue(counter);
+
+            // getting list of corresponding dots in the original spiral
             listOrigin = drawPathCoordinates.getGreyCoordinates(counter, shape, start);
 
-            // error calculation
-            double error = errorSum/counter;
-            double time = (double) (finish - start)/1000;
-
-            // standard deviation calculation
-            for (int i=0; i<counter; i++) {
-                sdSum += Math.pow(listError.get(i) - error, 2);
-            }
-            sd = Math.sqrt(sdSum/counter);
+            // getting result based on list of drawn dots coordinates
+            List<Double> result = drawPathCoordinates.getSpiralResults(listDrawn, counter, start, finish);
+            double error = result.get(0);
+            double sd = result.get(1);
+            double maxError = result.get(2);
+            double time = result.get(3);
 
             // dialog to show results
             AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
             builder.setTitle("Result")
                     .setMessage("Error: " + String.format(Locale.ENGLISH,"%.3f", error) + " px" +
                             "\nSD: " + String.format(Locale.ENGLISH,"%.3f", sd) + " px" +
-                            "\nMax error: " + String.format(Locale.ENGLISH,"%.3f", errorMax) + " px" +
+                            "\nMax error: " + String.format(Locale.ENGLISH,"%.3f", maxError) + " px" +
                             "\nTime: " + time + " sec")
                     .setNegativeButton("Dismiss", new DialogInterface.OnClickListener() {
                         @Override
