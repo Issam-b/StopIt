@@ -16,7 +16,6 @@ import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ImageView;
-
 import com.ubicomp.stopit.stopit.R;
 import com.ubicomp.stopit.stopit.model.SpiralCoordinates;
 import com.ubicomp.stopit.stopit.model.SquareCoordinates;
@@ -73,7 +72,7 @@ public class InitializeBackground extends View {
             builder.setNeutralButton("Do not show again", new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialogInterface, int i) {
-                    pref.edit().putBoolean(hint_state, true).commit();
+                    pref.edit().putBoolean(hint_state, true).apply();
                 }
             });
             builder.show();

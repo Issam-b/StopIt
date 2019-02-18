@@ -12,12 +12,8 @@ import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Toast;
-
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
 import com.ubicomp.stopit.stopit.model.SpiralCoordinates;
 import com.ubicomp.stopit.stopit.presenter.CanvasActivityPresenter;
-;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -35,9 +31,6 @@ public class DrawCanvas extends View {
 
     // path coordinate variables
     SpiralCoordinates spiralCoordinates = new SpiralCoordinates();
-    private DatabaseReference mDatabase;
-    private List<List<Float>> listOrigin = new ArrayList<>();
-    private List<List<Float>> listDrawn = new ArrayList<>();
 
     String shape;
 
@@ -55,9 +48,7 @@ public class DrawCanvas extends View {
         brush.setColor(Color.BLUE);
         brush.setStyle(Paint.Style.STROKE);
         brush.setStrokeJoin(Paint.Join.ROUND);
-        brush.setStrokeWidth(3f);
-
-        mDatabase = FirebaseDatabase.getInstance().getReference();
+        brush.setStrokeWidth(3);
     }
 
     public DrawCanvas(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
@@ -73,20 +64,17 @@ public class DrawCanvas extends View {
         if(drawEnable) {
             float pointX = event.getX();
             float pointY = event.getY();
-            List<Float> listItem = new ArrayList<>();
 
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN:
                     path.moveTo(pointX, pointY);
-                    listItem.add(pointX);
-                    listItem.add(pointY);
+                    spiralCoordinates.appendDrawnDot(pointX, pointY);
                     counter++;
-                    if (start==0) start = System.currentTimeMillis();
+                    if (start == 0) start = System.currentTimeMillis();
                     break;
                 case MotionEvent.ACTION_MOVE:
                     path.lineTo(pointX, pointY);
-                    listItem.add(pointX);
-                    listItem.add(pointY);
+                    spiralCoordinates.appendDrawnDot(pointX, pointY);
                     counter++;
                     break;
                 case MotionEvent.ACTION_UP:
@@ -96,24 +84,6 @@ public class DrawCanvas extends View {
                 default:
                     return false;
             }
-
-            listDrawn.add(listItem);
-            mDatabase.child("users")
-                    .child(CanvasActivityPresenter.username)
-                    .child(shape)
-                    .child(String.valueOf(start))
-                    .child("drawnDots")
-                    .child(String.valueOf(counter))
-                    .child("x")
-                    .setValue(pointX);
-            mDatabase.child("users")
-                    .child(CanvasActivityPresenter.username)
-                    .child(shape)
-                    .child(String.valueOf(start))
-                    .child("drawnDots")
-                    .child(String.valueOf(counter))
-                    .child("y")
-                    .setValue(pointY);
             postInvalidate();
 
             return true;
@@ -136,8 +106,6 @@ public class DrawCanvas extends View {
         counter = 0;
         start = 0;
         finish = 0;
-        listDrawn.clear();
-        listOrigin.clear();
         drawEnable = true;
         invalidate();
     }
@@ -150,11 +118,15 @@ public class DrawCanvas extends View {
         } else {
             drawEnable = false;
 
+            // store drawn dots coordinates to db
+            spiralCoordinates.storeDrawnDotsCoordinates(shape, start);
+
             // getting list of corresponding dots in the original spiral
-            listOrigin = spiralCoordinates.getGreyCoordinates(counter, shape, start);
+            List<List<Float>> greyDots = new ArrayList<>(); // FIXME: should't be needed to return this?
+            greyDots = spiralCoordinates.getGreyCoordinates(counter, shape, start);
 
             // getting result based on list of drawn dots coordinates
-            List<Double> result = spiralCoordinates.getSpiralResults(listDrawn, counter, start, finish);
+            List<Double> result = spiralCoordinates.getSpiralResults(spiralCoordinates.getDrawnDots(), counter, start, finish, shape);
             double error = result.get(0);
             double sd = result.get(1);
             double maxError = result.get(2);

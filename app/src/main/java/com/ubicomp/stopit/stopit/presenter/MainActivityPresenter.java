@@ -4,10 +4,8 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
-
 import com.google.firebase.database.DatabaseReference;
 import com.ubicomp.stopit.stopit.R;
 
@@ -15,7 +13,6 @@ public class MainActivityPresenter extends AppCompatActivity {
 
     private DatabaseReference mDatabase;
     static public int USERS_COUNT;
-    static public String USERNAME;
     private String username = "empty_name";
     private EditText et_username;
 
@@ -25,11 +22,8 @@ public class MainActivityPresenter extends AppCompatActivity {
         setContentView(R.layout.activity_main_presenter);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        try {
+        if(getSupportActionBar() != null)
             getSupportActionBar().hide();
-        } catch (NullPointerException exception) {
-            Log.d("StopIt", "Couldn't hide bar title");
-        }
 
         et_username = findViewById(R.id.usernameText);
     }

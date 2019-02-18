@@ -7,7 +7,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.DisplayMetrics;
 import android.view.View;
 import android.widget.Button;
-
 import com.ubicomp.stopit.stopit.R;
 import com.ubicomp.stopit.stopit.views.DrawCanvas;
 import com.ubicomp.stopit.stopit.views.InitializeBackground;
@@ -32,7 +31,7 @@ public class CanvasActivityPresenter extends AppCompatActivity {
 
         metrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(metrics);
-        height = metrics.heightPixels - 400;    // what is 400?
+        height = metrics.heightPixels;
         width = metrics.widthPixels;
 
         final Button resetButton = findViewById(R.id.resetButton);
