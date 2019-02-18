@@ -6,9 +6,9 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.ubicomp.stopit.stopit.presenter.CanvasActivityPresenter;
 
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 
 public class SpiralCoordinates {
@@ -95,7 +95,6 @@ public class SpiralCoordinates {
         double errorSum = 0;
         double errorMax = 0;
         double sdSum = 0;
-        DecimalFormat df = new DecimalFormat("#.###");
 
         for (int i=0; i<drawn.size(); i++) {
             float x = drawn.get(i).get(0);
@@ -147,7 +146,7 @@ public class SpiralCoordinates {
                 .child(String.valueOf(start))
                 .child("results")
                 .child("error")
-                .setValue(Double.valueOf(df.format(error)));
+                .setValue(Double.valueOf(String.format(Locale.ENGLISH,"%.3f", error)));
 
         // max error record to db
         mDatabase.child("users")
@@ -156,7 +155,7 @@ public class SpiralCoordinates {
                 .child(String.valueOf(start))
                 .child("results")
                 .child("errorMax")
-                .setValue(Double.valueOf(df.format(errorMax)));
+                .setValue(Double.valueOf(String.format(Locale.ENGLISH,"%.3f", errorMax)));
 
         // standard deviation calculation and record to db
         for (int i=0; i<counter; i++) {
@@ -169,7 +168,7 @@ public class SpiralCoordinates {
                 .child(String.valueOf(start))
                 .child("results")
                 .child("sd")
-                .setValue(Double.valueOf(df.format(sd)));
+                .setValue(Double.valueOf(String.format(Locale.ENGLISH,"%.3f", sd)));
 
         // time calculation and record to db
         double time = (double) (finish - start)/1000;
