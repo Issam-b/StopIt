@@ -8,24 +8,25 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-
 public class SpiralCoordinates {
 
     private DatabaseReference mDatabase;
+    private List<List<Float>> drawnDots = new ArrayList<>();
+    private float x0 = CanvasActivityPresenter.width / 2f;   // Starting point of the spiral
+    private float y0 = CanvasActivityPresenter.height / 2f;  // is always in the middle of the screen
+
+    // spiral parameters
     private final static double thetaStepSize = 0.1;
     private final static double turnsNumber = 2;
     private final static double turnFull = Math.PI * 2;
     private final static double turnsDistance = 30; // ?? What's the scaling?
-    private float x0 = CanvasActivityPresenter.width / 2f;   // Starting point of the spiral
-    private float y0 = CanvasActivityPresenter.height / 2f;  // is always in the middle of the screen
-    private List<List<Float>> drawnDots = new ArrayList<>();
 
     public SpiralCoordinates() {
         mDatabase = FirebaseDatabase.getInstance().getReference();
     }
 
     // draws grey line
-    public void drawGreyPath(Path path) {
+    public void drawOriginalPath(Path path) {
         float x;
         float y;
         double theta = 0;
@@ -35,7 +36,6 @@ public class SpiralCoordinates {
 
         // drawing spiral
         while (theta < turnFull*turnsNumber) {
-
             x = (float) (turnsDistance * theta * Math.cos(theta) + x0);
             y = (float) (turnsDistance * theta * Math.sin(theta) + y0);
             path.lineTo(x, y);
@@ -43,45 +43,7 @@ public class SpiralCoordinates {
         }
     }
 
-    // finds the coordinates of specified number of dots over the whole spiral
-    public List<List<Float>> getGreyCoordinates(int size, String shape, long start) {
-        float x;
-        float y;
-        double theta = 0;
-        double thetaStepSize = turnsNumber*turnFull/size;
-        List<List<Float>> originalDots = new ArrayList<>();
-
-        for (int i=1; i<=size; i++) {
-            x = (float) (turnsDistance * theta * Math.cos(theta) + x0);
-            y = (float) (turnsDistance * theta * Math.sin(theta) + y0);
-            mDatabase.child("users")
-                    .child(CanvasActivityPresenter.username)
-                    .child(shape)
-                    .child(String.valueOf(start))
-                    .child("originalDots")
-                    .child(String.valueOf(i))
-                    .child("x")
-                    .setValue(x);
-            mDatabase.child("users")
-                    .child(CanvasActivityPresenter.username)
-                    .child(shape)
-                    .child(String.valueOf(start))
-                    .child("originalDots")
-                    .child(String.valueOf(i))
-                    .child("y")
-                    .setValue(y);
-
-            List<Float> listItem = new ArrayList<>();
-            listItem.add(x);
-            listItem.add(y);
-            originalDots.add(listItem);
-
-            theta += thetaStepSize;
-        }
-
-        return originalDots;
-    }
-
+    // store drawn dots in a buffer list
     public void appendDrawnDot(float pointX, float pointY) {
         List<Float> dot = new ArrayList<>();
         dot.add(pointX);
@@ -93,8 +55,39 @@ public class SpiralCoordinates {
         return drawnDots;
     }
 
-    // store drawn dots coordinates to db
-    public void storeDrawnDotsCoordinates(String shape, long start) {
+    // finds and saves the coordinates of specified number of dots over the whole spiral
+    public void saveOriginalDotsCoordinates(int size, long start) {
+        float x;
+        float y;
+        double theta = 0;
+        double thetaStepSize = turnsNumber*turnFull/size;
+
+        for (int i=1; i<=size; i++) {
+            x = (float) (turnsDistance * theta * Math.cos(theta) + x0);
+            y = (float) (turnsDistance * theta * Math.sin(theta) + y0);
+            theta += thetaStepSize;
+
+            mDatabase.child("users")
+                    .child(CanvasActivityPresenter.username)
+                    .child("spiral")
+                    .child(String.valueOf(start))
+                    .child("originalDots")
+                    .child(String.valueOf(i))
+                    .child("x")
+                    .setValue(x);
+            mDatabase.child("users")
+                    .child(CanvasActivityPresenter.username)
+                    .child("spiral")
+                    .child(String.valueOf(start))
+                    .child("originalDots")
+                    .child(String.valueOf(i))
+                    .child("y")
+                    .setValue(y);
+        }
+    }
+
+    // saves drawn dots coordinates to db
+    public void saveDrawnDotsCoordinates(long start) {
         float pointX;
         float pointY;
         List<Float> dot;
@@ -105,7 +98,7 @@ public class SpiralCoordinates {
 
             mDatabase.child("users")
                     .child(CanvasActivityPresenter.username)
-                    .child(shape)
+                    .child("spiral")
                     .child(String.valueOf(start))
                     .child("drawnDots")
                     .child(String.valueOf(idx))
@@ -113,7 +106,7 @@ public class SpiralCoordinates {
                     .setValue(pointX);
             mDatabase.child("users")
                     .child(CanvasActivityPresenter.username)
-                    .child(shape)
+                    .child("spiral")
                     .child(String.valueOf(start))
                     .child("drawnDots")
                     .child(String.valueOf(idx))
@@ -122,7 +115,8 @@ public class SpiralCoordinates {
         }
     }
 
-    public List<Double> getSpiralResults(List<List<Float>> drawn, int counter, long start, long finish, String shape) {
+    // gets the avg error, max error, sd error and time for the drawing
+    public List<Double> getSpiralResults(List<List<Float>> drawn, int counter, long start, long finish) {
         float x0 = CanvasActivityPresenter.width / 2f;
         float y0 = CanvasActivityPresenter.height / 2f;
         List<Double> listAngle = new ArrayList<>();
@@ -164,12 +158,10 @@ public class SpiralCoordinates {
             if (error>errorMax) errorMax = error;
         }
 
-
-
         // counter record to db
         mDatabase.child("users")
                 .child(CanvasActivityPresenter.username)
-                .child(shape)
+                .child("spiral")
                 .child(String.valueOf(start))
                 .child("counter")
                 .setValue(counter);
@@ -178,7 +170,7 @@ public class SpiralCoordinates {
         double error = errorSum/counter;
         mDatabase.child("users")
                 .child(CanvasActivityPresenter.username)
-                .child(shape)
+                .child("spiral")
                 .child(String.valueOf(start))
                 .child("results")
                 .child("error")
@@ -187,7 +179,7 @@ public class SpiralCoordinates {
         // max error record to db
         mDatabase.child("users")
                 .child(CanvasActivityPresenter.username)
-                .child(shape)
+                .child("spiral")
                 .child(String.valueOf(start))
                 .child("results")
                 .child("errorMax")
@@ -200,7 +192,7 @@ public class SpiralCoordinates {
         double sd = Math.sqrt(sdSum/counter);
         mDatabase.child("users")
                 .child(CanvasActivityPresenter.username)
-                .child(shape)
+                .child("spiral")
                 .child(String.valueOf(start))
                 .child("results")
                 .child("sd")
@@ -210,7 +202,7 @@ public class SpiralCoordinates {
         double time = (double) (finish - start)/1000;
         mDatabase.child("users")
                 .child(CanvasActivityPresenter.username)
-                .child(shape)
+                .child("spiral")
                 .child(String.valueOf(start))
                 .child("results")
                 .child("time")

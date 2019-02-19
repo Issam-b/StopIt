@@ -11,8 +11,6 @@ import com.ubicomp.stopit.stopit.R;
 
 public class MainActivityPresenter extends AppCompatActivity {
 
-    private DatabaseReference mDatabase;
-    static public int USERS_COUNT;
     private String username = "empty_name";
     private EditText et_username;
 
@@ -33,7 +31,7 @@ public class MainActivityPresenter extends AppCompatActivity {
             username = et_username.getText().toString();
 
         Intent intent= new Intent(this, CanvasActivityPresenter.class);
-        intent.putExtra("background","spiral");
+        intent.putExtra("shape","spiral");
         intent.putExtra("username", username);
         startActivity(intent);
     }
@@ -43,7 +41,7 @@ public class MainActivityPresenter extends AppCompatActivity {
             username = et_username.getText().toString();
 
         Intent intent= new Intent(this, CanvasActivityPresenter.class);
-        intent.putExtra("background","square");
+        intent.putExtra("shape","square");
         intent.putExtra("username", username);
         startActivity(intent);
     }

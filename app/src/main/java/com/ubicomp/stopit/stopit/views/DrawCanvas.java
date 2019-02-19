@@ -13,6 +13,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Toast;
 import com.ubicomp.stopit.stopit.model.SpiralCoordinates;
+import com.ubicomp.stopit.stopit.model.SquareCoordinates;
 import com.ubicomp.stopit.stopit.presenter.CanvasActivityPresenter;
 import java.util.ArrayList;
 import java.util.List;
@@ -30,10 +31,16 @@ public class DrawCanvas extends View {
     long finish = 0;
 
     // path coordinate variables
-    SpiralCoordinates spiralCoordinates = new SpiralCoordinates();
-
+    SpiralCoordinates spiralCoordinates;
+    SquareCoordinates squareCoordinates;
     String shape;
 
+
+    public void setShape(String input) {
+        shape = input;
+        if (input.equals("spiral")) spiralCoordinates = new SpiralCoordinates();
+        if (input.equals("square")) squareCoordinates = new SquareCoordinates();
+    }
 
     public DrawCanvas(Context context) {
         super(context);
@@ -68,13 +75,15 @@ public class DrawCanvas extends View {
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN:
                     path.moveTo(pointX, pointY);
-                    spiralCoordinates.appendDrawnDot(pointX, pointY);
+                    if (shape.equals("spiral")) spiralCoordinates.appendDrawnDot(pointX, pointY);
+                    if (shape.equals("square")) squareCoordinates.appendDrawnDot(pointX, pointY);
                     counter++;
                     if (start == 0) start = System.currentTimeMillis();
                     break;
                 case MotionEvent.ACTION_MOVE:
                     path.lineTo(pointX, pointY);
-                    spiralCoordinates.appendDrawnDot(pointX, pointY);
+                    if (shape.equals("spiral")) spiralCoordinates.appendDrawnDot(pointX, pointY);
+                    if (shape.equals("square")) squareCoordinates.appendDrawnDot(pointX, pointY);
                     counter++;
                     break;
                 case MotionEvent.ACTION_UP:
@@ -117,16 +126,22 @@ public class DrawCanvas extends View {
 
         } else {
             drawEnable = false;
+            List<Double> result = new ArrayList<>();
 
-            // store drawn dots coordinates to db
-            spiralCoordinates.storeDrawnDotsCoordinates(shape, start);
+            // save drawn and original dots coordinates and calculate the results
+            if (shape.equals("spiral")) {
+                spiralCoordinates.saveDrawnDotsCoordinates(start);
+                spiralCoordinates.saveOriginalDotsCoordinates(counter, start);
+                result = spiralCoordinates.getSpiralResults(spiralCoordinates.getDrawnDots(), counter, start, finish);
+            }
 
-            // getting list of corresponding dots in the original spiral
-            List<List<Float>> greyDots = new ArrayList<>(); // FIXME: should't be needed to return this?
-            greyDots = spiralCoordinates.getGreyCoordinates(counter, shape, start);
+            // save drawn dots coordinates and calculate the results
+            if (shape.equals("square")) {
+                squareCoordinates.saveDrawnDotsCoordinates(start);
+                result = squareCoordinates.getSquareResults(squareCoordinates.getDrawnDots(), counter, start, finish);
+            }
 
             // getting result based on list of drawn dots coordinates
-            List<Double> result = spiralCoordinates.getSpiralResults(spiralCoordinates.getDrawnDots(), counter, start, finish, shape);
             double error = result.get(0);
             double sd = result.get(1);
             double maxError = result.get(2);
@@ -148,9 +163,5 @@ public class DrawCanvas extends View {
                     })
                     .show();
         }
-    }
-
-    public void setShape(String shape) {
-        this.shape = shape;
     }
 }

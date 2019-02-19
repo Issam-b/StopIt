@@ -45,13 +45,13 @@ public class InitializeBackground extends View {
         switch (background) {
             case "spiral": {
                 SpiralCoordinates spiralCoordinates = new SpiralCoordinates();
-                spiralCoordinates.drawGreyPath(path);
+                spiralCoordinates.drawOriginalPath(path);
                 help.setImageResource(R.drawable.ic_hint_spiral);
                 break;
             }
             case "square": {
                 SquareCoordinates squareCoordinates = new SquareCoordinates();
-                squareCoordinates.drawGreyPath(path);
+                squareCoordinates.drawOriginalPath(path);
                 help.setImageResource(R.drawable.ic_hint_square);
                 break;
             }

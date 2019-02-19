@@ -19,13 +19,13 @@ public class CanvasActivityPresenter extends AppCompatActivity {
     static public int height = 0;
     public static String username;
     static public DrawCanvas drawCanvas;
-    InitializeBackground spiralBackground;
+    InitializeBackground background;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Intent intent = getIntent();
-        String initializeBackground = intent.getStringExtra("background");
+        String shape = intent.getStringExtra("shape");
         username = intent.getStringExtra("username");
         setContentView(R.layout.canvas_activity);
 
@@ -37,12 +37,12 @@ public class CanvasActivityPresenter extends AppCompatActivity {
         final Button resetButton = findViewById(R.id.resetButton);
         final Button doneButton = findViewById(R.id.doneButton);
 
-        spiralBackground = new InitializeBackground(this,initializeBackground);
+        background = new InitializeBackground(this,shape);
         drawCanvas = findViewById(R.id.drawCanvas);
-        drawCanvas.setShape(initializeBackground);
+        drawCanvas.setShape(shape);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-            drawCanvas.setBackground(spiralBackground.getBackground());
+            drawCanvas.setBackground(background.getBackground());
         }
 
         resetButton.setOnClickListener(new View.OnClickListener() {
