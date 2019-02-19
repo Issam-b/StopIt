@@ -142,7 +142,7 @@ public class SpiralCoordinates {
             listAngle.add(angle);           // stores angle values
             int j = listAngle.size();
             if (j>1) {
-                if (listAngle.get(j-1) < listAngle.get(j-2)) {
+                if (listAngle.get(j-2) - listAngle.get(j-1) > Math.PI/2) {
                     buffer += Math.PI;
                 }
                 angle += buffer;            // fixes the value of the angle
@@ -150,6 +150,7 @@ public class SpiralCoordinates {
 
             // 3) Calculate R0 for the corresponding dot in grey line based on received angle
             double r0 = SpiralCoordinates.turnsDistance*angle;
+            if (angle < 0) r0 = 0;          // for cases when the initial angle is negative
 
             // 4) Find the error for the dot as an absolute value of R and R0
             double error = Math.abs(r - r0);
