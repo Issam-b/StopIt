@@ -3,6 +3,7 @@ package com.ubicomp.stopit.stopit.views;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -119,6 +120,14 @@ public class DrawCanvas extends View {
         invalidate();
     }
 
+    public Bitmap screenShot(View view) {
+        Bitmap bitmap = Bitmap.createBitmap(view.getWidth(), view.getHeight(), Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bitmap);
+        view.draw(canvas);
+
+        return bitmap;
+    }
+
     public void doneDrawing() {
 
         if (counter == 0) {
@@ -131,6 +140,7 @@ public class DrawCanvas extends View {
             // save drawn and original dots coordinates and calculate the results
             if (shape.equals("spiral")) {
                 spiralCoordinates.saveDrawnDotsCoordinates(start);
+                spiralCoordinates.storeScreenshotToDb(screenShot(this), start);
                 spiralCoordinates.saveOriginalDotsCoordinates(counter, start);
                 result = spiralCoordinates.getSpiralResults(spiralCoordinates.getDrawnDots(), counter, start, finish);
             }
@@ -138,6 +148,7 @@ public class DrawCanvas extends View {
             // save drawn dots coordinates and calculate the results
             if (shape.equals("square")) {
                 squareCoordinates.saveDrawnDotsCoordinates(start);
+                squareCoordinates.storeScreenshotToDb(screenShot(this), start);
                 result = squareCoordinates.getSquareResults(squareCoordinates.getDrawnDots(), counter, start, finish);
             }
 

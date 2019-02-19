@@ -1,11 +1,22 @@
 package com.ubicomp.stopit.stopit.model;
 
+import android.graphics.Bitmap;
 import android.graphics.Path;
+import android.support.annotation.NonNull;
+import android.util.Log;
 
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 import com.ubicomp.stopit.stopit.presenter.CanvasActivityPresenter;
 
+import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -14,6 +25,7 @@ public class SquareCoordinates {
 
     private DatabaseReference mDatabase;
     private List<List<Float>> drawnDots = new ArrayList<>();
+    private final String SQUARE_MODEL_TAG = "STOPIT_Square";
 
     public SquareCoordinates() {
         mDatabase = FirebaseDatabase.getInstance().getReference();
@@ -75,6 +87,41 @@ public class SquareCoordinates {
                     .child("y")
                     .setValue(pointY);
         }
+    }
+
+    public void storeScreenshotToDb(final Bitmap bitmap, final long start) {
+        FirebaseAuth mAuth = FirebaseAuth.getInstance();
+        mAuth.signInAnonymously().addOnSuccessListener(new  OnSuccessListener<AuthResult>() {
+            @Override
+            public void onSuccess(AuthResult authResult) {
+                FirebaseStorage storage = FirebaseStorage.getInstance();
+                StorageReference storageRef = storage.getReference();
+
+                StorageReference mountainImagesRef = storageRef.child("users/images")
+                        .child(CanvasActivityPresenter.username)
+                        .child("square")
+                        .child(String.valueOf(start) + ".jpg");
+
+                ByteArrayOutputStream bArrOutStr = new ByteArrayOutputStream();
+                bitmap.compress(Bitmap.CompressFormat.PNG, 100, bArrOutStr);
+                byte[] data = bArrOutStr.toByteArray();
+
+                UploadTask uploadTask = mountainImagesRef.putBytes(data);
+                uploadTask.addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception exception) {
+                        Log.e(SQUARE_MODEL_TAG, "Couldn't upload bitmap");
+                    }
+                });
+
+            }
+        })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception exception) {
+                        Log.e(SQUARE_MODEL_TAG, "signInAnonymously : FAILURE", exception);
+                    }
+                });
     }
 
     // gets the avg error, max error, sd error and time for the drawing
