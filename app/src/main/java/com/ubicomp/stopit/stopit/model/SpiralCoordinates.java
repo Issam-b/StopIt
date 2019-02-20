@@ -2,8 +2,8 @@ package com.ubicomp.stopit.stopit.model;
 
 import android.graphics.Bitmap;
 import android.graphics.Path;
+import android.net.Uri;
 import android.support.annotation.NonNull;
-import android.util.Log;
 
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -15,6 +15,7 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.ubicomp.stopit.stopit.presenter.CanvasActivityPresenter;
+import com.ubicomp.stopit.stopit.views.DrawCanvas;
 
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
@@ -129,42 +130,6 @@ public class SpiralCoordinates {
         }
     }
 
-
-    public void storeScreenshotToDb(final Bitmap bitmap, final long start) {
-        FirebaseAuth mAuth = FirebaseAuth.getInstance();
-        mAuth.signInAnonymously().addOnSuccessListener(new  OnSuccessListener<AuthResult>() {
-            @Override
-            public void onSuccess(AuthResult authResult) {
-                FirebaseStorage storage = FirebaseStorage.getInstance();
-                StorageReference storageRef = storage.getReference();
-
-                StorageReference mountainImagesRef = storageRef.child("users/images")
-                        .child(CanvasActivityPresenter.username)
-                        .child("spiral")
-                        .child(String.valueOf(start) + ".jpg");
-
-                ByteArrayOutputStream bArrOutStr = new ByteArrayOutputStream();
-                bitmap.compress(Bitmap.CompressFormat.PNG, 100, bArrOutStr);
-                byte[] data = bArrOutStr.toByteArray();
-
-                UploadTask uploadTask = mountainImagesRef.putBytes(data);
-                uploadTask.addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception exception) {
-                        Log.e(SPIRAL_MODEL_TAG, "Couldn't upload bitmap");
-                    }
-                });
-
-            }
-        })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception exception) {
-                        Log.e(SPIRAL_MODEL_TAG, "signInAnonymously : FAILURE", exception);
-                    }
-                });
-    }
-
     // gets the avg error, max error, sd error and time for the drawing
     public List<Double> getSpiralResults(List<List<Float>> drawn, int counter, long start, long finish) {
         float x0 = CanvasActivityPresenter.width / 2f;
@@ -266,5 +231,58 @@ public class SpiralCoordinates {
         result.add(time);
 
         return result;
+    }
+
+    // saves original and drawn paths image to the db
+    public void saveScreenshotToDb(final Bitmap bitmap, final long start) {
+        FirebaseAuth mAuth = FirebaseAuth.getInstance();
+        mAuth.signInAnonymously().addOnSuccessListener(new  OnSuccessListener<AuthResult>() {
+            @Override
+            public void onSuccess(AuthResult authResult) {
+                FirebaseStorage storage = FirebaseStorage.getInstance();
+                StorageReference storageRef = storage.getReference();
+
+                final StorageReference imageRef = storageRef.child("users")
+                        .child(CanvasActivityPresenter.username)
+                        .child("spiral")
+                        .child(String.valueOf(start) + ".jpg");
+
+                ByteArrayOutputStream bArrOutStr = new ByteArrayOutputStream();
+                bitmap.compress(Bitmap.CompressFormat.PNG, 100, bArrOutStr);
+                byte[] data = bArrOutStr.toByteArray();
+
+                final UploadTask uploadTask = imageRef.putBytes(data);
+                uploadTask.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                    @Override
+                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                        imageRef.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                            @Override
+                            public void onSuccess(Uri uri) {
+                                mDatabase.child("users")
+                                        .child(CanvasActivityPresenter.username)
+                                        .child("spiral")
+                                        .child(String.valueOf(start))
+                                        .child("imageUrl")
+                                        .setValue(String.valueOf(uri));
+
+                                DrawCanvas.updateDialog(true);
+                            }
+                        });
+                    }
+                }).addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        mDatabase.child("users")
+                                .child(CanvasActivityPresenter.username)
+                                .child("spiral")
+                                .child(String.valueOf(start))
+                                .child("imageUrl")
+                                .setValue("upload_error");
+
+                        DrawCanvas.updateDialog(false);
+                    }
+                });
+            }
+        });
     }
 }

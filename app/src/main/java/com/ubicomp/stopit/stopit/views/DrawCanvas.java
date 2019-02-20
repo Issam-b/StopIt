@@ -10,9 +10,12 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
+import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Toast;
+
+import com.ubicomp.stopit.stopit.R;
 import com.ubicomp.stopit.stopit.model.SpiralCoordinates;
 import com.ubicomp.stopit.stopit.model.SquareCoordinates;
 import com.ubicomp.stopit.stopit.presenter.CanvasActivityPresenter;
@@ -26,16 +29,20 @@ public class DrawCanvas extends View {
     // drawing variables
     private Path path = new Path();
     private Paint brush = new Paint();
+    private boolean drawEnable = true;
     private int counter = 0;
-    boolean drawEnable = true;
-    long start = 0;
-    long finish = 0;
+    private long start = 0;
+    private long finish = 0;
 
     // path coordinate variables
-    SpiralCoordinates spiralCoordinates;
-    SquareCoordinates squareCoordinates;
-    String shape;
+    private SpiralCoordinates spiralCoordinates;
+    private SquareCoordinates squareCoordinates;
+    private String shape;
 
+    // result dialog variables
+    private static String dialogMessage;
+    private static AlertDialog dialog;
+    private static View progress;
 
     public void setShape(String input) {
         shape = input;
@@ -124,7 +131,6 @@ public class DrawCanvas extends View {
         Bitmap bitmap = Bitmap.createBitmap(view.getWidth(), view.getHeight(), Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(bitmap);
         view.draw(canvas);
-
         return bitmap;
     }
 
@@ -140,15 +146,15 @@ public class DrawCanvas extends View {
             // save drawn and original dots coordinates and calculate the results
             if (shape.equals("spiral")) {
                 spiralCoordinates.saveDrawnDotsCoordinates(start);
-                spiralCoordinates.storeScreenshotToDb(screenShot(this), start);
                 spiralCoordinates.saveOriginalDotsCoordinates(counter, start);
+                spiralCoordinates.saveScreenshotToDb(screenShot(this), start);
                 result = spiralCoordinates.getSpiralResults(spiralCoordinates.getDrawnDots(), counter, start, finish);
             }
 
             // save drawn dots coordinates and calculate the results
             if (shape.equals("square")) {
                 squareCoordinates.saveDrawnDotsCoordinates(start);
-                squareCoordinates.storeScreenshotToDb(screenShot(this), start);
+                squareCoordinates.saveScreenshotToDb(screenShot(this), start);
                 result = squareCoordinates.getSquareResults(squareCoordinates.getDrawnDots(), counter, start, finish);
             }
 
@@ -158,21 +164,36 @@ public class DrawCanvas extends View {
             double maxError = result.get(2);
             double time = result.get(3);
 
+            // setting up dialog components
+            progress = LayoutInflater.from(getContext()).inflate(R.layout.result_progress_layout, null);
+            dialogMessage = "Error: " + String.format(Locale.ENGLISH,"%.3f", error) + " px" +
+                    "\nSD: " + String.format(Locale.ENGLISH,"%.3f", sd) + " px" +
+                    "\nMax error: " + String.format(Locale.ENGLISH,"%.3f", maxError) + " px" +
+                    "\nTime: " + time + " sec";
+
             // dialog to show results
-            AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-            builder.setTitle("Result")
-                    .setMessage("Error: " + String.format(Locale.ENGLISH,"%.3f", error) + " px" +
-                            "\nSD: " + String.format(Locale.ENGLISH,"%.3f", sd) + " px" +
-                            "\nMax error: " + String.format(Locale.ENGLISH,"%.3f", maxError) + " px" +
-                            "\nTime: " + time + " sec")
-                    .setNegativeButton("Dismiss", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
-                            CanvasActivityPresenter activity = (CanvasActivityPresenter) getContext();
-                            activity.finish();
-                        }
-                    })
-                    .show();
+            dialog = new AlertDialog.Builder(getContext()).create();
+            dialog.setTitle("Result");
+            dialog.setView(progress);
+            dialog.setMessage(dialogMessage);
+            dialog.setButton(DialogInterface.BUTTON_POSITIVE, "Ok", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    CanvasActivityPresenter activity = (CanvasActivityPresenter) getContext() ;
+                    activity.finish();
+                }
+            });
+            dialog.show();
         }
+    }
+
+    // update dialog when a screenshot is uploaded
+    public static void updateDialog(boolean success) {
+        if (success) dialogMessage += "\n\nResults have been saved";
+        else dialogMessage += "\n\nResults save error. Please complete a test again";
+
+        progress.setVisibility(GONE);
+        dialog.setMessage(dialogMessage);
+        dialog.show();
     }
 }
