@@ -28,6 +28,10 @@
             android:name=".presenter.MainActivityPresenter"
             android:label="@string/app_name"
             android:theme="@style/AppTheme.NoActionBar">
+        </activity>
+        <activity
+            android:name=".presenter.SplashActivityPresenter"
+            android:theme="@style/SplashTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
