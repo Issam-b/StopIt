@@ -37,17 +37,20 @@ public class Provider extends ContentProvider {
 
     //Database table names
     public static final String DB_DRAWING = "drawing";
+    public static final String DB_SCREENSHOT = "screenshot";
 
     //ContentProvider query indexes
     private static final int TABLE_DRAWING_DIR = 1;
     private static final int TABLE_DRAWING_ITEM = 2;
+    private static final int TABLE_SCREENSHOT_DIR = 3;
+    private static final int TABLE_SCREENSHOT_ITEM = 4;
 
     /**
      * Database tables:
-     * - drawing test data
+     * - drawing test data, screenshot image
      */
     public static final String[] DATABASE_TABLES = {
-            DB_DRAWING
+            DB_DRAWING, DB_SCREENSHOT
     };
 
     //These are columns that we need to sync data, don't change this!
@@ -58,7 +61,7 @@ public class Provider extends ContentProvider {
     }
 
     /**
-     * Game table
+     * Drawing data table
      */
     public static final class Drawing_Data implements AWAREColumns {
         public static final Uri CONTENT_URI = Uri.parse("content://" + AUTHORITY + "/" + DB_DRAWING);
@@ -68,19 +71,37 @@ public class Provider extends ContentProvider {
         public static final String DATA = "data";
     }
 
-    //Game table fields
-    private static final String DB_TBL_GAME_FIELDS =
+    //Drawing table fields
+    private static final String DB_TBL_DRAWING_FIELDS =
             Drawing_Data._ID + " integer primary key autoincrement," +
                     Drawing_Data.TIMESTAMP + " real default 0," +
                     Drawing_Data.DEVICE_ID + " text default ''," +
                     Drawing_Data.DATA + " longtext default ''";
+
+    /**
+     * Screenshot table
+     */
+    public static final class Screenshot_Data implements AWAREColumns {
+        public static final Uri CONTENT_URI = Uri.parse("content://" + AUTHORITY + "/" + DB_SCREENSHOT);
+        public static final String CONTENT_TYPE = ContentResolver.CURSOR_DIR_BASE_TYPE + "/vnd.com.ubicomp.stopit.stopit.model.provider.screenshot";
+        public static final String CONTENT_ITEM_TYPE = ContentResolver.CURSOR_ITEM_BASE_TYPE + "/vnd.com.ubicomp.stopit.stopit.model.provider.screenshot";
+
+        public static final String IMAGE = "image";
+    }
+
+    //Screenshot table fields
+    private static final String DB_TBL_SCREENSHOT_FIELDS =
+            Screenshot_Data._ID + " integer primary key autoincrement," +
+                    Screenshot_Data.TIMESTAMP + " real default 0," +
+                    Screenshot_Data.DEVICE_ID + " text default ''," +
+                    Screenshot_Data.IMAGE + " blob default null";
 
 
     /**
      * Share the fields with AWARE so we can replicate the table schema on the server
      */
     public static final String[] TABLES_FIELDS = {
-            DB_TBL_GAME_FIELDS
+            DB_TBL_DRAWING_FIELDS, DB_TBL_SCREENSHOT_FIELDS
     };
 
     //Helper variables for ContentProvider - DO NOT CHANGE
@@ -96,6 +117,7 @@ public class Provider extends ContentProvider {
 
     //For each table, create a hashmap needed for database queries
     private HashMap<String, String> tableDrawingHash;
+    private HashMap<String, String> tableScreenshotHash;
 
     /**
      * Returns the provider authority that is dynamic
@@ -113,16 +135,27 @@ public class Provider extends ContentProvider {
 
         sUriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
 
-        //Game table indexes DIR and ITEM
+        //Drawing table indexes DIR and ITEM
         sUriMatcher.addURI(AUTHORITY, DATABASE_TABLES[0], TABLE_DRAWING_DIR);
         sUriMatcher.addURI(AUTHORITY, DATABASE_TABLES[0] + "/#", TABLE_DRAWING_ITEM);
 
-        //Game table HasMap
+        //Screenshot table indexes DIR and ITEM
+        sUriMatcher.addURI(AUTHORITY, DATABASE_TABLES[1], TABLE_SCREENSHOT_DIR);
+        sUriMatcher.addURI(AUTHORITY, DATABASE_TABLES[1] + "/#", TABLE_SCREENSHOT_ITEM);
+
+        //Drawing table HasMap
         tableDrawingHash = new HashMap<>();
         tableDrawingHash.put(Drawing_Data._ID, Drawing_Data._ID);
         tableDrawingHash.put(Drawing_Data.TIMESTAMP, Drawing_Data.TIMESTAMP);
         tableDrawingHash.put(Drawing_Data.DEVICE_ID, Drawing_Data.DEVICE_ID);
         tableDrawingHash.put(Drawing_Data.DATA, Drawing_Data.DATA);
+
+        //Screenshot table HasMap
+        tableScreenshotHash = new HashMap<>();
+        tableScreenshotHash.put(Screenshot_Data._ID, Screenshot_Data._ID);
+        tableScreenshotHash.put(Screenshot_Data.TIMESTAMP, Screenshot_Data.TIMESTAMP);
+        tableScreenshotHash.put(Screenshot_Data.DEVICE_ID, Screenshot_Data.DEVICE_ID);
+        tableScreenshotHash.put(Screenshot_Data.IMAGE, Screenshot_Data.IMAGE);
 
         return true;
     }
@@ -138,6 +171,10 @@ public class Provider extends ContentProvider {
 
             case TABLE_DRAWING_DIR:
                 count = database.delete(DATABASE_TABLES[0], selection, selectionArgs);
+                break;
+
+            case TABLE_SCREENSHOT_DIR:
+                count = database.delete(DATABASE_TABLES[1], selection, selectionArgs);
                 break;
 
             default:
@@ -165,11 +202,23 @@ public class Provider extends ContentProvider {
         switch (sUriMatcher.match(uri)) {
 
             case TABLE_DRAWING_DIR:
-                long game_id = database.insert(DATABASE_TABLES[0], Drawing_Data.DEVICE_ID, values);
+                long drawing_id = database.insert(DATABASE_TABLES[0], Drawing_Data.DEVICE_ID, values);
                 database.setTransactionSuccessful();
                 database.endTransaction();
-                if (game_id > 0) {
-                    Uri dataUri = ContentUris.withAppendedId(Drawing_Data.CONTENT_URI, game_id);
+                if (drawing_id > 0) {
+                    Uri dataUri = ContentUris.withAppendedId(Drawing_Data.CONTENT_URI, drawing_id);
+                    getContext().getContentResolver().notifyChange(dataUri, null, false);
+                    return dataUri;
+                }
+                database.endTransaction();
+                throw new SQLException("Failed to insert row into " + uri);
+
+            case TABLE_SCREENSHOT_DIR:
+                long screenshot_id = database.insert(DATABASE_TABLES[1], Screenshot_Data.DEVICE_ID, values);
+                database.setTransactionSuccessful();
+                database.endTransaction();
+                if (screenshot_id > 0) {
+                    Uri dataUri = ContentUris.withAppendedId(Screenshot_Data.CONTENT_URI, screenshot_id);
                     getContext().getContentResolver().notifyChange(dataUri, null, false);
                     return dataUri;
                 }
@@ -194,6 +243,11 @@ public class Provider extends ContentProvider {
             case TABLE_DRAWING_DIR:
                 qb.setTables(DATABASE_TABLES[0]);
                 qb.setProjectionMap(tableDrawingHash); //the hashmap of the table
+                break;
+
+            case TABLE_SCREENSHOT_DIR:
+                qb.setTables(DATABASE_TABLES[1]);
+                qb.setProjectionMap(tableScreenshotHash); //the hashmap of the table
                 break;
 
             default:
@@ -221,6 +275,11 @@ public class Provider extends ContentProvider {
             case TABLE_DRAWING_ITEM:
                 return Drawing_Data.CONTENT_ITEM_TYPE;
 
+            case TABLE_SCREENSHOT_DIR:
+                return Screenshot_Data.CONTENT_TYPE;
+            case TABLE_SCREENSHOT_ITEM:
+                return Screenshot_Data.CONTENT_ITEM_TYPE;
+
             default:
                 throw new IllegalArgumentException("Unknown URI " + uri);
         }
@@ -238,6 +297,10 @@ public class Provider extends ContentProvider {
 
             case TABLE_DRAWING_DIR:
                 count = database.update(DATABASE_TABLES[0], values, selection, selectionArgs);
+                break;
+
+            case TABLE_SCREENSHOT_DIR:
+                count = database.update(DATABASE_TABLES[1], values, selection, selectionArgs);
                 break;
 
             default:

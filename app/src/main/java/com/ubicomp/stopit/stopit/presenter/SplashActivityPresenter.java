@@ -30,10 +30,12 @@ public class SplashActivityPresenter extends AppCompatActivity {
 
         // List of required permission
         ArrayList<String> REQUIRED_PERMISSIONS = new ArrayList<>();
+        REQUIRED_PERMISSIONS.add(Manifest.permission.WRITE_EXTERNAL_STORAGE);
         REQUIRED_PERMISSIONS.add(Manifest.permission.WRITE_SYNC_SETTINGS);
         REQUIRED_PERMISSIONS.add(Manifest.permission.READ_SYNC_SETTINGS);
         REQUIRED_PERMISSIONS.add(Manifest.permission.INTERNET);
         REQUIRED_PERMISSIONS.add(Manifest.permission.GET_ACCOUNTS);
+
 
         // flag to check permissions
         boolean permissions_ok = true;

@@ -1,21 +1,18 @@
 package com.ubicomp.stopit.stopit.model;
 
+import android.content.ContentValues;
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Path;
-import android.net.Uri;
-import android.support.annotation.NonNull;
+import android.util.Base64;
 
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.firebase.auth.AuthResult;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
-import com.google.firebase.storage.UploadTask;
+import com.aware.Aware;
+import com.aware.Aware_Preferences;
 import com.ubicomp.stopit.stopit.presenter.CanvasActivityPresenter;
-import com.ubicomp.stopit.stopit.views.DrawCanvas;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
@@ -24,20 +21,20 @@ import java.util.Locale;
 
 public class SquareCoordinates {
 
-    private DatabaseReference mDatabase;
-    private List<List<Float>> drawnDots = new ArrayList<>();
-    private final String SQUARE_MODEL_TAG = "STOPIT_Square";
+    //drawing dots saving variables
+    private List<List<Object>> drawnDots = new ArrayList<>();
+    private JSONObject data = new JSONObject();
+    private JSONArray drawn = new JSONArray();
+    private JSONArray origin = new JSONArray();
+    private JSONObject results = new JSONObject();
 
-    public SquareCoordinates() {
-        mDatabase = FirebaseDatabase.getInstance().getReference();
-    }
 
-    // draws grey line
+    // draws grey square
     public void drawOriginalPath(Path path) {
-        float x0 = CanvasActivityPresenter.width / 5f;   // Puts the square in the middle of the screen
+        float x0 = CanvasActivityPresenter.width / 5f;
         float y0 = CanvasActivityPresenter.height / 3f;
-        float x1=x0*4;
-        float y1=y0 + x0*3;
+        float x1 = x0*4;
+        float y1 = y0 + x0*3;
 
         path.moveTo(x0,y0);
         path.lineTo(x1,y0);
@@ -50,48 +47,45 @@ public class SquareCoordinates {
     }
 
     // store drawn dots in a buffer list
-    public void appendDrawnDot(float pointX, float pointY) {
-        List<Float> dot = new ArrayList<>();
+    public void appendDrawnDot(long time, float pointX, float pointY) {
+        List<Object> dot = new ArrayList<>();
+        dot.add(time);
         dot.add(pointX);
         dot.add(pointY);
         drawnDots.add(dot);
     }
 
-    public List<List<Float>> getDrawnDots() {
-        return drawnDots;
+    // reset values on "reset" click
+    public void resetCalculation() {
+        drawnDots = new ArrayList<>();
+        data = new JSONObject();
+        drawn = new JSONArray();
+        origin = new JSONArray();
+        results = new JSONObject();
     }
 
-    // save drawn dots coordinates to db
-    public void saveDrawnDotsCoordinates(long start) {
-        float pointX;
-        float pointY;
-        List<Float> dot;
+    // transform list of drawn dots to JSON array
+    public void getDrawnDotsCoordinates(long start) {
+        List<Object> dot;
         for(int idx = 0; idx < drawnDots.size(); idx++) {
             dot = drawnDots.get(idx);
-            pointX = dot.get(0);
-            pointY = dot.get(1);
 
-            mDatabase.child("users")
-                    .child(CanvasActivityPresenter.username)
-                    .child("square")
-                    .child(String.valueOf(start))
-                    .child("drawnDots")
-                    .child(String.valueOf(idx))
-                    .child("x")
-                    .setValue(pointX);
-            mDatabase.child("users")
-                    .child(CanvasActivityPresenter.username)
-                    .child("square")
-                    .child(String.valueOf(start))
-                    .child("drawnDots")
-                    .child(String.valueOf(idx))
-                    .child("y")
-                    .setValue(pointY);
+            // JSON
+            JSONObject drawnDot = new JSONObject();
+            try {
+                drawnDot.put("timestamp", dot.get(0));
+                drawnDot.put("x", dot.get(1));
+                drawnDot.put("y", dot.get(2));
+                drawn.put(drawnDot);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
         }
     }
 
     // gets the avg error, max error, sd error and time for the drawing
-    public List<Double> getSquareResults(List<List<Float>> drawn, int counter, long start, long finish) {
+    public List<Double> getSquareResults(int counter, long start, long finish) {
+
         // variables for error calculation based on screen resolution
         float xMax = CanvasActivityPresenter.width;
         float yMax = CanvasActivityPresenter.height;
@@ -108,9 +102,9 @@ public class SquareCoordinates {
         List<Double> listError = new ArrayList<>();
 
         // Calculating the error for every dot one by one
-        for (int i=0; i<drawn.size(); i++) {
-            float x = drawn.get(i).get(0);
-            float y = drawn.get(i).get(1);
+        for (int i=0; i<drawnDots.size(); i++) {
+            float x = (float) drawnDots.get(i).get(1);
+            float y = (float) drawnDots.get(i).get(2);
             double error=0;
 
             // depending on a dot location
@@ -142,116 +136,76 @@ public class SquareCoordinates {
             if (error>errorMax) errorMax = error;
         }
 
-        // counter record to db
-        mDatabase.child("users")
-                .child(CanvasActivityPresenter.username)
-                .child("square")
-                .child(String.valueOf(start))
-                .child("counter")
-                .setValue(counter);
-
-        // average error calculation and record to db
+        // average error calculation
         double error = errorSum/counter;
-        mDatabase.child("users")
-                .child(CanvasActivityPresenter.username)
-                .child("square")
-                .child(String.valueOf(start))
-                .child("results")
-                .child("error")
-                .setValue(Double.valueOf(String.format(Locale.ENGLISH,"%.3f", error)));
 
-        // max error record to db
-        mDatabase.child("users")
-                .child(CanvasActivityPresenter.username)
-                .child("square")
-                .child(String.valueOf(start))
-                .child("results")
-                .child("errorMax")
-                .setValue(Double.valueOf(String.format(Locale.ENGLISH,"%.3f", errorMax)));
-
-        // standard deviation calculation and record to db
+        // standard deviation calculation
         for (int i=0; i<counter; i++) {
             sdSum += Math.pow(listError.get(i) - error, 2);
         }
         double sd = Math.sqrt(sdSum/counter);
-        mDatabase.child("users")
-                .child(CanvasActivityPresenter.username)
-                .child("square")
-                .child(String.valueOf(start))
-                .child("results")
-                .child("sd")
-                .setValue(Double.valueOf(String.format(Locale.ENGLISH,"%.3f", sd)));
 
         // time calculation and record to db
         double time = (double) (finish - start)/1000;
-        mDatabase.child("users")
-                .child(CanvasActivityPresenter.username)
-                .child("square")
-                .child(String.valueOf(start))
-                .child("results")
-                .child("time")
-                .setValue(time);
+
+        // JSON
+        try {
+            results.put("error", Double.valueOf(String.format(Locale.ENGLISH,"%.3f", error)));
+            results.put("error_max", Double.valueOf(String.format(Locale.ENGLISH,"%.3f", errorMax)));
+            results.put("sd", Double.valueOf(String.format(Locale.ENGLISH,"%.3f", sd)));
+            results.put("time", time);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
 
         // add all the results to the list for showing it in a view
         List<Double> result = new ArrayList<>();
         result.add(error);
-        result.add(sd);
         result.add(errorMax);
+        result.add(sd);
         result.add(time);
 
         return result;
     }
 
-    // saves original and drawn paths image to the db
-    public void saveScreenshotToDb(final Bitmap bitmap, final long start) {
-        FirebaseAuth mAuth = FirebaseAuth.getInstance();
-        mAuth.signInAnonymously().addOnSuccessListener(new  OnSuccessListener<AuthResult>() {
-            @Override
-            public void onSuccess(AuthResult authResult) {
-                FirebaseStorage storage = FirebaseStorage.getInstance();
-                StorageReference storageRef = storage.getReference();
+    // saves drawing data to the db
+    public void saveData(Context context, long start, int counter) {
 
-                final StorageReference imageRef = storageRef.child("users")
-                        .child(CanvasActivityPresenter.username)
-                        .child("square")
-                        .child(String.valueOf(start) + ".jpg");
+        try {
+            data.put("userame", CanvasActivityPresenter.username);
+            data.put("game_type", "square");
+            data.put("device_x_res", CanvasActivityPresenter.width);
+            data.put("device_y_res", CanvasActivityPresenter.height);
+            data.put("counter", counter);
+            data.put("results", results);
+            data.put("dots_drawn", drawn);
+//            data.put("dots_original", origin);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
 
-                ByteArrayOutputStream bArrOutStr = new ByteArrayOutputStream();
-                bitmap.compress(Bitmap.CompressFormat.PNG, 100, bArrOutStr);
-                byte[] data = bArrOutStr.toByteArray();
+        // Inserting data to database
+        ContentValues values = new ContentValues();
+        values.put(Provider.Drawing_Data.TIMESTAMP, start);
+        values.put(Provider.Drawing_Data.DEVICE_ID, Aware.getSetting(context, Aware_Preferences.DEVICE_ID));
+        values.put(Provider.Drawing_Data.DATA, String.valueOf(data));
+        context.getContentResolver().insert(Provider.Drawing_Data.CONTENT_URI, values);
+    }
 
-                UploadTask uploadTask = imageRef.putBytes(data);
-                uploadTask.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                    @Override
-                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                        imageRef.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
-                            @Override
-                            public void onSuccess(Uri uri) {
-                                mDatabase.child("users")
-                                        .child(CanvasActivityPresenter.username)
-                                        .child("square")
-                                        .child(String.valueOf(start))
-                                        .child("imageUrl")
-                                        .setValue(String.valueOf(uri));
+    // save screenshot to the db
+    public void saveScreenshot(Context context, final Bitmap bitmap, final long start) {
 
-                                DrawCanvas.updateDialog(true);
-                            }
-                        });
-                    }
-                }).addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        mDatabase.child("users")
-                                .child(CanvasActivityPresenter.username)
-                                .child("square")
-                                .child(String.valueOf(start))
-                                .child("imageUrl")
-                                .setValue("upload_error");
+        // encodes the image to a string
+        ByteArrayOutputStream bArrOutStr = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.PNG, 100, bArrOutStr);
+        byte[] data = bArrOutStr.toByteArray();
+        String image_str = Base64.encodeToString(data, Base64.DEFAULT);
 
-                        DrawCanvas.updateDialog(false);
-                    }
-                });
-            }
-        });
+        // Inserting data to database
+        ContentValues values = new ContentValues();
+        values.put(Provider.Screenshot_Data.TIMESTAMP, start);
+        values.put(Provider.Screenshot_Data.DEVICE_ID, Aware.getSetting(context, Aware_Preferences.DEVICE_ID));
+        values.put(Provider.Screenshot_Data.IMAGE, image_str);
+        context.getContentResolver().insert(Provider.Screenshot_Data.CONTENT_URI, values);
     }
 }

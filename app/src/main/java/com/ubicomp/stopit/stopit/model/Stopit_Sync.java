@@ -22,7 +22,7 @@ public class Stopit_Sync extends Service {
                 sSyncAdapter.init(
                         Provider.DATABASE_TABLES, Provider.TABLES_FIELDS,
                         new Uri[]{
-                                Provider.Drawing_Data.CONTENT_URI
+                                Provider.Drawing_Data.CONTENT_URI, Provider.Screenshot_Data.CONTENT_URI
                         }
                 );
             }

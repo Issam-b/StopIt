@@ -6,7 +6,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.EditText;
-import com.google.firebase.database.DatabaseReference;
 import com.ubicomp.stopit.stopit.R;
 
 public class MainActivityPresenter extends AppCompatActivity {
