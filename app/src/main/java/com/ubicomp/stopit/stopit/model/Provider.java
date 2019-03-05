@@ -94,7 +94,7 @@ public class Provider extends ContentProvider {
             Screenshot_Data._ID + " integer primary key autoincrement," +
                     Screenshot_Data.TIMESTAMP + " real default 0," +
                     Screenshot_Data.DEVICE_ID + " text default ''," +
-                    Screenshot_Data.IMAGE + " blob default null";
+                    Screenshot_Data.IMAGE + " mediumblob default null";
 
 
     /**
