@@ -78,12 +78,13 @@ public class SpiralCoordinates {
     // transform list of drawn dots to JSON array
     public void getDrawnDotsCoordinates() {
         List<Object> dot;
-        for(int idx = 0; idx < drawnDots.size(); idx++) {
-            dot = drawnDots.get(idx);
+        for(int i = 1; i <= drawnDots.size(); i++) {
+            dot = drawnDots.get(i-1);
 
             // JSON
             JSONObject drawnDot = new JSONObject();
             try {
+                drawnDot.put("id", i);
                 drawnDot.put("timestamp", dot.get(0));
                 drawnDot.put("x", dot.get(1));
                 drawnDot.put("y", dot.get(2));
@@ -95,13 +96,13 @@ public class SpiralCoordinates {
     }
 
     // calculates the coordinates of specified number of dots over the whole spiral
-    public void getOriginalDotsCoordinates(int size) {
+    public void getOriginalDotsCoordinates() {
         float x;
         float y;
         double theta = 0;
-        double thetaStepSize = turnsNumber*turnFull/size;
+        double thetaStepSize = turnsNumber*turnFull/drawnDots.size();
 
-        for (int i=1; i<=size; i++) {
+        for (int i=1; i<=drawnDots.size(); i++) {
             x = (float) (turnsDistance * theta * Math.cos(theta) + x0);
             y = (float) (turnsDistance * theta * Math.sin(theta) + y0);
             theta += thetaStepSize;
@@ -109,6 +110,7 @@ public class SpiralCoordinates {
             // JSON
             JSONObject originDot = new JSONObject();
             try {
+                originDot.put("id", i);
                 originDot.put("x", x);
                 originDot.put("y", y);
                 origin.put(originDot);
@@ -119,7 +121,7 @@ public class SpiralCoordinates {
     }
 
     // calculates the avg error, max error, sd error and time for the drawing
-    public List<Double> getSpiralResults(int counter, long start, long finish) {
+    public List<Double> getSpiralResults(long start, long finish) {
         List<Double> listAngle = new ArrayList<>();
         List<Double> listError = new ArrayList<>();
         double buffer = 0;
@@ -161,13 +163,13 @@ public class SpiralCoordinates {
         }
 
         // average error calculation
-        double error = errorSum/counter;
+        double error = errorSum/drawnDots.size();
 
         // standard deviation calculation
-        for (int i=0; i<counter; i++) {
+        for (int i=0; i<drawnDots.size(); i++) {
             sdSum += Math.pow(listError.get(i) - error, 2);
         }
-        double sd = Math.sqrt(sdSum/counter);
+        double sd = Math.sqrt(sdSum/drawnDots.size());
 
         // time calculation
         double time = (double) (finish - start)/1000;
@@ -192,14 +194,14 @@ public class SpiralCoordinates {
     }
 
     // saves drawing data to the db
-    public void saveData(Context context, long start, int counter) {
+    public void saveData(Context context, long start) {
 
         try {
             data.put("userame", CanvasActivityPresenter.username);
             data.put("game_type", "spiral");
             data.put("device_x_res", CanvasActivityPresenter.width);
             data.put("device_y_res", CanvasActivityPresenter.height);
-            data.put("counter", counter);
+            data.put("counter", drawnDots.size());
             data.put("results", results);
             data.put("dots_drawn", drawn);
             data.put("dots_original", origin);

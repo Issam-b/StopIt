@@ -37,6 +37,7 @@ public class DrawCanvas extends View {
     private SquareCoordinates squareCoordinates;
     private String shape;
 
+    // context reference
     CanvasActivityPresenter activity = (CanvasActivityPresenter) getContext() ;
 
     public void setShape(String input) {
@@ -146,18 +147,18 @@ public class DrawCanvas extends View {
             // save drawn and original dots coordinates and calculate the results
             if (shape.equals("spiral")) {
                 spiralCoordinates.getDrawnDotsCoordinates();
-                spiralCoordinates.getOriginalDotsCoordinates(counter);
-                result = spiralCoordinates.getSpiralResults(counter, start, finish);
-                spiralCoordinates.saveData(activity, start, counter);
+                spiralCoordinates.getOriginalDotsCoordinates();
+                result = spiralCoordinates.getSpiralResults(start, finish);
+                spiralCoordinates.saveData(activity, start);
                 spiralCoordinates.saveScreenshot(activity, screenshot(this), start);
             }
 
             // save drawn dots coordinates and calculate the results
             if (shape.equals("square")) {
-                squareCoordinates.getDrawnDotsCoordinates(start);
-
-                result = squareCoordinates.getSquareResults(counter, start, finish);
-                squareCoordinates.saveData(activity, start, counter);
+                squareCoordinates.getDrawnDotsCoordinates();
+                squareCoordinates.getOriginalDotsCoordinates();
+                result = squareCoordinates.getSquareResults(start, finish);
+                squareCoordinates.saveData(activity, start);
                 squareCoordinates.saveScreenshot(activity, screenshot(this), start);
             }
 
