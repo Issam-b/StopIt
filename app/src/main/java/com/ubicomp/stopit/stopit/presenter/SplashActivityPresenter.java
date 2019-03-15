@@ -7,7 +7,6 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.SharedPreferences;
 import android.content.SyncRequest;
 import android.support.v4.content.PermissionChecker;
 import android.support.v7.app.AppCompatActivity;
@@ -23,6 +22,7 @@ import java.util.ArrayList;
 public class SplashActivityPresenter extends AppCompatActivity {
 
     public static final String STUDY_URL = "https://api.awareframework.com/index.php/webservice/index/2263/EhxRJNmHC2kt";
+    private static final String PACKAGE_NAME = "com.ubicomp.stopit.stopit";
 
     @Override
     protected void onResume() {
@@ -89,6 +89,11 @@ public class SplashActivityPresenter extends AppCompatActivity {
                         .setSyncAdapter(aware_account, authority)
                         .setExtras(new Bundle()).build();
                 ContentResolver.requestSync(request);
+
+                // Setting up Aware preferences
+                Aware.isBatteryOptimizationIgnored(getApplicationContext(), PACKAGE_NAME);
+                Aware.setSetting(getApplicationContext(), Aware_Preferences.DEBUG_DB_SLOW, true);
+                Aware.setSetting(getApplicationContext(), Aware_Preferences.WEBSERVICE_SILENT, true);
 
                 // Open MainActivity when all conditions are ok
                 Intent main = new Intent(getApplicationContext(), MainActivityPresenter.class);
